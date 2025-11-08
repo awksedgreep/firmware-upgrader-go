@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Settings - Firmware Upgrader</title>
+        <link rel="stylesheet" href="/shared.css" />
+        <style>
+            .settings-grid {
+                display: grid;
+                gap: var(--spacing-xl);
+                max-width: 900px;
+            }
+
+            .settings-section {
+                background-color: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-xl);
+            }
+
+            .settings-section h2 {
+                margin-top: 0;
+                margin-bottom: var(--spacing-lg);
+                color: var(--text-primary);
+                font-size: 1.5em;
+            }
+
+            .setting-item {
+                display: grid;
+                grid-template-columns: 200px 1fr 100px;
+                gap: var(--spacing-lg);
+                align-items: center;
+                padding: var(--spacing-md) 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .setting-item:last-child {
+                border-bottom: none;
+            }
+
+            .setting-label {
+                font-weight: 600;
+                color: var(--text-primary);
+            }
+
+            .setting-description {
+                font-size: 0.85em;
+                color: var(--text-secondary);
+                margin-top: var(--spacing-xs);
+            }
+
+            .setting-input {
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-sm);
+            }
+
+            .setting-input input {
+                flex: 1;
+                padding: var(--spacing-sm);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                font-size: 0.95em;
+            }
+
+            .setting-input .unit {
+                color: var(--text-secondary);
+                font-size: 0.9em;
+                min-width: 60px;
+            }
+
+            .setting-actions {
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .btn-save {
+                padding: var(--spacing-xs) var(--spacing-md);
+                background-color: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: var(--radius-md);
+                cursor: pointer;
+                font-size: 0.9em;
+                transition: background-color 0.2s;
+            }
+
+            .btn-save:hover {
+                background-color: var(--primary-dark);
+            }
+
+            .btn-save:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            .info-box {
+                background-color: var(--background);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                padding: var(--spacing-md);
+                margin-bottom: var(--spacing-lg);
+            }
+
+            .info-box h3 {
+                margin-top: 0;
+                font-size: 1em;
+                color: var(--text-primary);
+            }
+
+            .info-box p {
+                margin: var(--spacing-xs) 0;
+                font-size: 0.9em;
+                color: var(--text-secondary);
+            }
+
+            .warning-box {
+                background-color: #fef3c7;
+                border: 1px solid #f59e0b;
+                border-radius: var(--radius-md);
+                padding: var(--spacing-md);
+                margin-top: var(--spacing-lg);
+            }
+
+            .warning-box p {
+                margin: 0;
+                color: #92400e;
+                font-size: 0.9em;
+            }
+
+            .save-all-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: var(--spacing-lg);
+                background-color: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                margin-top: var(--spacing-lg);
+            }
+
+            .save-all-section button {
+                padding: var(--spacing-md) var(--spacing-xl);
+                font-size: 1em;
+            }
+
+            .changed-indicator {
+                color: #f59e0b;
+                font-size: 0.9em;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <header>
+            <div class="header-container">
+                <a href="/" class="header-brand"> 📡 Firmware Upgrader </a>
+                <nav>
+                    <ul class="header-nav">
+                        <li><a href="/">Dashboard</a></li>
+                        <li><a href="/cmts.html">CMTS</a></li>
+                        <li><a href="/rules.html">Rules</a></li>
+                        <li><a href="/activity.html">Activity</a></li>
+                        <li><a href="/settings.html">Settings</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div></div>
+                    <h1 class="page-title">System Settings</h1>
+                    <p class="page-subtitle">
+                        Configure upgrade engine parameters and system behavior
+                    </p>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <!-- Info Box -->
+                <div class="info-box">
+                    <h3>⚠️ Important Information</h3>
+                    <p>
+                        Settings are stored in the database and persist across restarts.
+                    </p>
+                    <p>
+                        <strong>Note:</strong> Changes take effect immediately but may
+                        require restart for some parameters (workers, intervals).
+                    </p>
+                </div>
+
+                <!-- Engine Settings -->
+                <div class="settings-section">
+                    <h2>🔧 Upgrade Engine</h2>
+
+                    <div class="setting-item">
+                        <div></div>
+                            <div class="setting-label">Workers</div>
+                            <div class="setting-description">
+                                Number of concurrent upgrade workers
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="workers"
+                                min="1"
+                                max="50"
+                                data-original=""
+                            />
+                            <span class="unit">workers</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('workers')"
+                                disabled
+                                id="btn-workers"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Discovery Interval</div>
+                            <div class="setting-description">
+                                How often to discover modems on CMTS devices
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="discovery_interval"
+                                min="10"
+                                max="3600"
+                                data-original=""
+                            />
+                            <span class="unit">seconds</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('discovery_interval')"
+                                disabled
+                                id="btn-discovery_interval"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Evaluation Interval</div>
+                            <div class="setting-description">
+                                How often to evaluate upgrade rules
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="evaluation_interval"
+                                min="10"
+                                max="7200"
+                                data-original=""
+                            />
+                            <span class="unit">seconds</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('evaluation_interval')"
+                                disabled
+                                id="btn-evaluation_interval"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Job Timeout</div>
+                            <div class="setting-description">
+                                Maximum time to wait for an upgrade to complete
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="job_timeout"
+                                min="60"
+                                max="1800"
+                                data-original=""
+                            />
+                            <span class="unit">seconds</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('job_timeout')"
+                                disabled
+                                id="btn-job_timeout"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Retry Attempts</div>
+                            <div class="setting-description">
+                                Number of retry attempts for failed upgrades
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="retry_attempts"
+                                min="0"
+                                max="10"
+                                data-original=""
+                            />
+                            <span class="unit">attempts</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('retry_attempts')"
+                                disabled
+                                id="btn-retry_attempts"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modem Settings -->
+                <div class="settings-section">
+                    <h2>📡 Cable Modem Filtering</h2>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Min Signal Level</div>
+                            <div class="setting-description">
+                                Minimum acceptable signal level for upgrades
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="signal_level_min"
+                                min="-30"
+                                max="0"
+                                step="0.5"
+                                data-original=""
+                            />
+                            <span class="unit">dBmV</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('signal_level_min')"
+                                disabled
+                                id="btn-signal_level_min"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Max Signal Level</div>
+                            <div class="setting-description">
+                                Maximum acceptable signal level for upgrades
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="signal_level_max"
+                                min="0"
+                                max="30"
+                                step="0.5"
+                                data-original=""
+                            />
+                            <span class="unit">dBmV</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('signal_level_max')"
+                                disabled
+                                id="btn-signal_level_max"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Max Upgrades per CMTS</div>
+                            <div class="setting-description">
+                                Maximum concurrent upgrades per CMTS device
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <input
+                                type="number"
+                                id="max_upgrades_per_cmts"
+                                min="1"
+                                max="100"
+                                data-original=""
+                            />
+                            <span class="unit">concurrent</span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('max_upgrades_per_cmts')"
+                                disabled
+                                id="btn-max_upgrades_per_cmts"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Settings -->
+                <div class="settings-section">
+                    <h2>⚙️ System</h2>
+
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">Log Level</div>
+                            <div class="setting-description">
+                                Logging verbosity level
+                            </div>
+                        </div>
+                        <div class="setting-input">
+                            <select
+                                id="log_level"
+                                style="
+                                    flex: 1;
+                                    padding: var(--spacing-sm);
+                                    border: 1px solid var(--border-color);
+                                    border-radius: var(--radius-md);
+                                "
+                                data-original=""
+                            >
+                                <option value="debug">Debug</option>
+                                <option value="info">Info</option>
+                                <option value="warn">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                            <span class="unit"></span>
+                        </div>
+                        <div class="setting-actions">
+                            <button
+                                class="btn-save"
+                                onclick="saveSetting('log_level')"
+                                disabled
+                                id="btn-log_level"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warning Box -->
+                <div class="warning-box">
+                    <p>
+                        <strong>⚠️ Restart Required:</strong> Changes to workers,
+                        discovery interval, and evaluation interval require
+                        restarting the application to take effect.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/cmts.html">CMTS Management</a></li>
+                        <li><a href="/rules.html">Rules Management</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>System</h3>
+                    <ul>
+                        <li><a href="#">Status</a></li>
+                        <li><a href="/settings.html">Settings</a></li>
+                        <li><a href="#">About</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Firmware Upgrader. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="/shared.js"></script>
+        <script>
+            const settings = [
+                "workers",
+                "discovery_interval",
+                "evaluation_interval",
+                "job_timeout",
+                "retry_attempts",
+                "signal_level_min",
+                "signal_level_max",
+                "max_upgrades_per_cmts",
+                "log_level",
+            ];
+
+            // Load settings on page load
+            async function loadSettings() {
+                try {
+                    const data = await apiGet("/api/settings");
+
+                    settings.forEach((key) => {
+                        const input = document.getElementById(key);
+                        if (input) {
+                            input.value = data[key] || "";
+                            input.dataset.original = data[key] || "";
+
+                            // Add change listener
+                            input.addEventListener("input", () =>
+                                checkChanged(key)
+                            );
+                            if (input.tagName === "SELECT") {
+                                input.addEventListener("change", () =>
+                                    checkChanged(key)
+                                );
+                            }
+                        }
+                    });
+                } catch (error) {
+                    showNotification(
+                        "Failed to load settings: " + error.message,
+                        "error"
+                    );
+                }
+            }
+
+            // Check if value changed
+            function checkChanged(key) {
+                const input = document.getElementById(key);
+                const button = document.getElementById("btn-" + key);
+                const changed = input.value !== input.dataset.original;
+                button.disabled = !changed;
+            }
+
+            // Save individual setting
+            async function saveSetting(key) {
+                const input = document.getElementById(key);
+                const button = document.getElementById("btn-" + key);
+                const value = input.value;
+
+                button.disabled = true;
+                button.textContent = "Saving...";
+
+                try {
+                    await apiPut("/api/settings/" + key, { value: value });
+                    input.dataset.original = value;
+                    showNotification(
+                        "Setting saved: " + key.replace(/_/g, " "),
+                        "success"
+                    );
+                    button.textContent = "Saved ✓";
+                    setTimeout(() => {
+                        button.textContent = "Save";
+                        checkChanged(key);
+                    }, 2000);
+                } catch (error) {
+                    showNotification(
+                        "Failed to save setting: " + error.message,
+                        "error"
+                    );
+                    button.textContent = "Save";
+                    button.disabled = false;
+                }
+            }
+
+            function showNotification(message, type) {
+                const notification = document.createElement("div");
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 16px 24px;
+                    background: ${type === "success" ? "#10b981" : "#ef4444"};
+                    color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 9999;
+                    animation: slideIn 0.3s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = "slideOut 0.3s ease";
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            // Load settings on page load
+            document.addEventListener("DOMContentLoaded", loadSettings);
+        </script>
+    </body>
+</html>

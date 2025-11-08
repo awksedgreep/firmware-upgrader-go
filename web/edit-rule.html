@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Edit Rule - Firmware Upgrader</title>
+        <style>
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Helvetica, Arial, sans-serif;
+                line-height: 1.6;
+                padding: 2em;
+                background-color: #f5f5f7;
+                color: #1d1d1f;
+            }
+            .container {
+                max-width: 960px;
+                margin: 0 auto;
+                background: #fff;
+                padding: 2em;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                font-size: 2.5em;
+            }
+            nav {
+                margin-bottom: 2em;
+            }
+            nav a {
+                margin-right: 1em;
+                color: #0066cc;
+                text-decoration: none;
+            }
+            form {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5em;
+                align-items: start;
+            }
+            .form-group {
+                display: flex;
+                flex-direction: column;
+            }
+            label {
+                font-weight: bold;
+                margin-bottom: 0.5em;
+            }
+            input,
+            select,
+            textarea {
+                padding: 0.8em;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                font-size: 1em;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .full-width {
+                grid-column: 1 / -1;
+            }
+            .criteria-group {
+                border: 1px dashed #ccc;
+                padding: 1em;
+                border-radius: 6px;
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5em;
+            }
+            .form-actions {
+                grid-column: 1 / -1;
+                display: flex;
+                justify-content: flex-end;
+                gap: 1em;
+                align-items: center;
+                margin-top: 1em;
+            }
+            button {
+                padding: 0.8em 1.5em;
+                border: none;
+                background-color: #007aff;
+                color: white;
+                border-radius: 6px;
+                font-size: 1em;
+                cursor: pointer;
+            }
+            .button-secondary {
+                background-color: #8e8e93;
+            }
+            .button-danger {
+                background-color: #ff3b30;
+                margin-right: auto;
+            }
+            .hidden {
+                display: none;
+            }
+            #form-message {
+                margin-top: 1em;
+                padding: 1em;
+                border-radius: 6px;
+                display: none;
+            }
+            .message-success {
+                background-color: #e5f7ed;
+                color: #248549;
+            }
+            .message-error {
+                background-color: #fdecea;
+                color: #c1272d;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                body {
+                    background-color: #1c1c1e;
+                    color: #f5f5f7;
+                }
+                .container {
+                    background: #2c2c2e;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                }
+                h1,
+                label {
+                    color: #fff;
+                }
+                nav a {
+                    color: #0a84ff;
+                }
+                input,
+                select,
+                textarea {
+                    background-color: #3a3a3c;
+                    border-color: #555;
+                    color: #f5f5f7;
+                }
+                .criteria-group {
+                    border-color: #555;
+                }
+                button {
+                    background-color: #0a84ff;
+                }
+                .button-secondary {
+                    background-color: #545458;
+                }
+                .button-danger {
+                    background-color: #ff453a;
+                }
+                .message-success {
+                    background-color: #2c4234;
+                    color: #34c759;
+                }
+                .message-error {
+                    background-color: #5c2222;
+                    color: #ff453a;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <nav>
+                <a href="/">Home</a>
+                <a href="/cmts.html">CMTS Management</a>
+                <a href="/rules.html">Rules Management</a>
+            </nav>
+            <h1>
+                Edit Rule
+                <span id="rule-name-header" style="color: #8e8e93"></span>
+            </h1>
+            <p id="loading-message">Loading rule data...</p>
+            <form id="edit-rule-form" class="hidden">
+                <input type="hidden" id="id" name="id" />
+                <div class="form-group">
+                    <label for="name">Rule Name</label>
+                    <input type="text" id="name" name="name" required />
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <input
+                        type="number"
+                        id="priority"
+                        name="priority"
+                        title="Higher numbers are evaluated first."
+                    />
+                </div>
+                <div class="form-group full-width">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="match_type">Match Type</label>
+                    <select id="match_type" name="match_type">
+                        <option value="MAC_RANGE">MAC Address Range</option>
+                        <option value="SYSDESCR_REGEX">
+                            SysDescr Regex Pattern
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="enabled">Status</label>
+                    <select id="enabled" name="enabled">
+                        <option value="1">Enabled</option>
+                        <option value="0">Disabled</option>
+                    </select>
+                </div>
+                <div class="criteria-group full-width">
+                    <div id="mac-range-criteria" class="hidden">
+                        <div class="form-group">
+                            <label for="start_mac">Start MAC Address</label>
+                            <input
+                                type="text"
+                                id="start_mac"
+                                name="start_mac"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="end_mac">End MAC Address</label>
+                            <input type="text" id="end_mac" name="end_mac" />
+                        </div>
+                    </div>
+                    <div id="sysdescr-regex-criteria" class="hidden full-width">
+                        <div class="form-group">
+                            <label for="pattern">Regex Pattern</label>
+                            <input type="text" id="pattern" name="pattern" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="tftp_server_ip">TFTP Server IP</label>
+                    <input
+                        type="text"
+                        id="tftp_server_ip"
+                        name="tftp_server_ip"
+                        required
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="firmware_filename">Firmware Filename</label>
+                    <input
+                        type="text"
+                        id="firmware_filename"
+                        name="firmware_filename"
+                        required
+                    />
+                </div>
+                <div class="form-actions">
+                    <button
+                        type="button"
+                        id="delete-button"
+                        class="button-danger"
+                    >
+                        Delete Rule
+                    </button>
+                    <a
+                        href="/rules.html"
+                        class="button-secondary"
+                        style="
+                            padding: 0.8em 1.5em;
+                            border-radius: 6px;
+                            text-decoration: none;
+                        "
+                        >Cancel</a
+                    >
+                    <button type="submit">Save Changes</button>
+                </div>
+            </form>
+            <div id="form-message"></div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", async () => {
+                const editForm = document.getElementById("edit-rule-form");
+                const loadingMessage =
+                    document.getElementById("loading-message");
+                const formMessage = document.getElementById("form-message");
+                const matchTypeSelect = document.getElementById("match_type");
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const ruleId = urlParams.get("id");
+
+                if (!ruleId) {
+                    loadingMessage.textContent = "Error: No Rule ID provided.";
+                    loadingMessage.style.color = "red";
+                    return;
+                }
+
+                const toggleCriteriaVisibility = (selectedType) => {
+                    const macFields =
+                        document.getElementById("mac-range-criteria");
+                    const regexField = document.getElementById(
+                        "sysdescr-regex-criteria",
+                    );
+                    if (selectedType === "MAC_RANGE") {
+                        macFields.classList.remove("hidden");
+                        regexField.classList.add("hidden");
+                        document.getElementById("start_mac").required = true;
+                        document.getElementById("end_mac").required = true;
+                        document.getElementById("pattern").required = false;
+                    } else {
+                        macFields.classList.add("hidden");
+                        regexField.classList.remove("hidden");
+                        document.getElementById("start_mac").required = false;
+                        document.getElementById("end_mac").required = false;
+                        document.getElementById("pattern").required = true;
+                    }
+                };
+
+                matchTypeSelect.addEventListener("change", () =>
+                    toggleCriteriaVisibility(matchTypeSelect.value),
+                );
+
+                try {
+                    const response = await fetch(`/api/rules/${ruleId}`);
+                    if (!response.ok)
+                        throw new Error(
+                            `Failed to fetch rule data (Status: ${response.status})`,
+                        );
+                    const rule = await response.json();
+
+                    // Populate common fields
+                    document.getElementById("id").value = rule.id;
+                    document.getElementById("name").value = rule.name;
+                    document.getElementById("priority").value = rule.priority;
+                    document.getElementById("description").value =
+                        rule.description || "";
+                    document.getElementById("match_type").value =
+                        rule.match_type;
+                    document.getElementById("tftp_server_ip").value =
+                        rule.tftp_server_ip;
+                    document.getElementById("firmware_filename").value =
+                        rule.firmware_filename;
+                    document.getElementById("enabled").value = rule.enabled
+                        ? "1"
+                        : "0";
+                    document.getElementById("rule-name-header").textContent =
+                        `(${rule.name})`;
+
+                    // Safely parse and populate criteria fields
+                    try {
+                        const criteria = JSON.parse(
+                            rule.match_criteria || "{}",
+                        );
+                        if (rule.match_type === "MAC_RANGE") {
+                            document.getElementById("start_mac").value =
+                                criteria.start_mac || "";
+                            document.getElementById("end_mac").value =
+                                criteria.end_mac || "";
+                        } else {
+                            document.getElementById("pattern").value =
+                                criteria.pattern || "";
+                        }
+                    } catch (e) {
+                        console.error(
+                            "Could not parse match_criteria JSON:",
+                            e,
+                        );
+                    }
+
+                    toggleCriteriaVisibility(rule.match_type);
+
+                    loadingMessage.style.display = "none";
+                    editForm.classList.remove("hidden");
+                } catch (error) {
+                    loadingMessage.textContent = `Error: ${error.message}`;
+                    loadingMessage.style.color = "red";
+                }
+
+                editForm.addEventListener("submit", async (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(editForm);
+                    const data = Object.fromEntries(formData.entries());
+
+                    let matchCriteria = {};
+                    if (data.match_type === "MAC_RANGE") {
+                        matchCriteria = {
+                            start_mac: data.start_mac,
+                            end_mac: data.end_mac,
+                        };
+                    } else {
+                        matchCriteria = { pattern: data.pattern };
+                    }
+
+                    const payload = {
+                        id: parseInt(data.id),
+                        name: data.name,
+                        description: data.description,
+                        match_type: data.match_type,
+                        match_criteria: JSON.stringify(matchCriteria),
+                        tftp_server_ip: data.tftp_server_ip,
+                        firmware_filename: data.firmware_filename,
+                        priority: parseInt(data.priority),
+                        enabled: data.enabled === "1",
+                    };
+
+                    try {
+                        const response = await fetch(`/api/rules/${ruleId}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload),
+                        });
+                        if (!response.ok) {
+                            const err = await response.json();
+                            throw new Error(
+                                err.error || "Failed to save changes",
+                            );
+                        }
+                        window.location.href = "/rules.html";
+                    } catch (error) {
+                        showMessage(`Error: ${error.message}`, false);
+                    }
+                });
+
+                document
+                    .getElementById("delete-button")
+                    .addEventListener("click", async () => {
+                        const ruleName = document.getElementById("name").value;
+                        if (
+                            confirm(
+                                `Are you sure you want to delete the rule "${ruleName}"?`,
+                            )
+                        ) {
+                            try {
+                                const response = await fetch(
+                                    `/api/rules/${ruleId}`,
+                                    { method: "DELETE" },
+                                );
+                                if (!response.ok)
+                                    throw new Error("Failed to delete rule");
+                                window.location.href = "/rules.html";
+                            } catch (error) {
+                                showMessage(`Error: ${error.message}`, false);
+                            }
+                        }
+                    });
+
+                function showMessage(message, isSuccess) {
+                    formMessage.textContent = message;
+                    formMessage.className = isSuccess
+                        ? "message-success"
+                        : "message-error";
+                    formMessage.style.display = "block";
+                }
+            });
+        </script>
+    </body>
+</html>

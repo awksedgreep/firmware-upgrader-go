@@ -1,0 +1,44 @@
+# Build stage
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /build
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build static binary without CGO (using pure Go SQLite)
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -a \
+    -ldflags="-s -w" \
+    -trimpath \
+    -o firmware-upgrader \
+    ./cmd/firmware-upgrader
+
+# Install UPX for compression
+RUN apk add --no-cache upx
+
+# Compress binary (can reduce size by 60-70%)
+RUN upx --best --lzma firmware-upgrader
+
+# Final stage - scratch (absolute minimum)
+FROM scratch
+
+WORKDIR /app
+
+# Copy CA certificates for HTTPS
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy compressed binary
+COPY --from=builder /build/firmware-upgrader .
+
+# Copy web UI
+COPY --from=builder /build/web ./web
+
+EXPOSE 8080
+
+ENTRYPOINT ["./firmware-upgrader"]
+CMD ["-port", "8080"]

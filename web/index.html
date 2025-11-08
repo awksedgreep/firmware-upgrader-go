@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Firmware Upgrader - Dashboard</title>
+        <link rel="stylesheet" href="/shared.css" />
+        <style>
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: var(--spacing-lg);
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .card {
+                background-color: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-lg);
+                transition: all 0.3s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            }
+
+            .card-icon {
+                font-size: 2.5em;
+                margin-bottom: var(--spacing-md);
+            }
+
+            .card-title {
+                font-size: 1.2em;
+                font-weight: 600;
+                margin-bottom: var(--spacing-md);
+            }
+
+            .card-value {
+                font-size: 2em;
+                font-weight: 700;
+                color: var(--primary-color);
+                margin-bottom: var(--spacing-md);
+            }
+
+            .card-description {
+                color: var(--text-secondary);
+                font-size: 0.9em;
+                margin-bottom: var(--spacing-lg);
+            }
+
+            .card-actions {
+                display: flex;
+                gap: var(--spacing-md);
+            }
+
+            .recent-activity {
+                background-color: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-lg);
+            }
+
+            .activity-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: var(--spacing-md) 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .activity-item:last-child {
+                border-bottom: none;
+            }
+
+            .activity-info {
+                flex: 1;
+            }
+
+            .activity-message {
+                font-weight: 500;
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .activity-time {
+                font-size: 0.85em;
+                color: var(--text-secondary);
+            }
+
+            .hero {
+                background: linear-gradient(
+                    135deg,
+                    var(--primary-color),
+                    var(--primary-dark)
+                );
+                color: white;
+                padding: var(--spacing-xl) var(--spacing-lg);
+                border-radius: var(--radius-lg);
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .hero h2 {
+                font-size: 2em;
+                margin-bottom: var(--spacing-md);
+            }
+
+            .hero p {
+                opacity: 0.9;
+                margin-bottom: var(--spacing-lg);
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: var(--spacing-xl);
+                color: var(--text-secondary);
+            }
+
+            .empty-state-icon {
+                font-size: 3em;
+                margin-bottom: var(--spacing-md);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <header>
+            <div class="header-container">
+                <a href="/" class="header-brand"> 📡 Firmware Upgrader </a>
+                <nav>
+                    <ul class="header-nav">
+                        <li><a href="/">Dashboard</a></li>
+                        <li><a href="/cmts.html">CMTS</a></li>
+                        <li><a href="/rules.html">Rules</a></li>
+                        <li><a href="/activity.html">Activity</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">
+                    Manage firmware upgrades for cable modems across your CMTS
+                    devices
+                </p>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="hero">
+                <h2>Welcome to Firmware Upgrader</h2>
+                <p>
+                    Efficiently manage and deploy firmware updates to your cable
+                    modem infrastructure
+                </p>
+                <a
+                    href="/cmts.html"
+                    class="button"
+                    style="
+                        background-color: white;
+                        color: var(--primary-color);
+                        font-weight: 600;
+                    "
+                >
+                    Get Started →
+                </a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-icon">🌐</div>
+                    <div class="card-title">CMTS Devices</div>
+                    <div class="card-value" id="cmts-count">-</div>
+                    <div class="card-description">Connected CMTS devices</div>
+                    <div class="card-actions">
+                        <a href="/cmts.html" class="button primary">Manage</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📦</div>
+                    <div class="card-title">Cable Modems</div>
+                    <div class="card-value" id="modems-count">-</div>
+                    <div class="card-description">Discovered modems</div>
+                    <div class="card-actions">
+                        <a href="/cmts.html" class="button primary">View</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">✨</div>
+                    <div class="card-title">Upgrade Rules</div>
+                    <div class="card-value" id="rules-count">-</div>
+                    <div class="card-description">Active upgrade rules</div>
+                    <div class="card-actions">
+                        <a href="/rules.html" class="button primary"
+                            >Configure</a
+                        >
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">Upgrade Jobs</div>
+                    <div class="card-value"></div>
+                        <span id="jobs-pending">-</span> / <span id="jobs-progress">-</span>
+                    </div>
+                    <div class="card-description">Pending / In Progress</div>
+                    <div class="card-actions">
+                        <a href="#activity" class="button primary">Monitor</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="section" id="activity">
+                <h2 class="section-title">Recent Activity</h2>
+                <div class="recent-activity" id="activity-container">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No activity yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links Section -->
+            <div class="section">
+                <h2 class="section-title">Quick Links</h2>
+                <div class="dashboard-grid">
+                    <a
+                        href="/cmts.html"
+                        class="card"
+                        style="text-decoration: none"
+                    >
+                        <div class="card-icon">🔧</div>
+                        <div class="card-title">Manage CMTS</div>
+                        <div class="card-description">
+                            Add, edit, or configure your CMTS devices
+                        </div>
+                    </a>
+                    <a
+                        href="/rules.html"
+                        class="card"
+                        style="text-decoration: none"
+                    >
+                        <div class="card-icon">📋</div>
+                        <div class="card-title">Manage Rules</div>
+                        <div class="card-description">
+                            Create and manage upgrade rules
+                        </div>
+                    </a>
+                    <a href="#" class="card" style="text-decoration: none">
+                        <div class="card-icon">📊</div>
+                        <div class="card-title">View Reports</div>
+                        <div class="card-description">
+                            Analyze upgrade history and statistics
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/cmts.html">CMTS Management</a></li>
+                        <li><a href="/rules.html">Rules Management</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>System</h3>
+                    <ul>
+                        <li><a href="#">Status</a></li>
+                        <li><a href="#">Settings</a></li>
+                        <li><a href="#">About</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Firmware Upgrader. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="/shared.js"></script>
+        <script>
+            // Load dashboard statistics
+            async function loadDashboardStats() {
+                try {
+                    const [cmts, modems, rules, jobs, activities] =
+                        await Promise.all([
+                            apiGet("/api/cmts"),
+                            apiGet("/api/modems"),
+                            apiGet("/api/rules"),
+                            apiGet("/api/jobs"),
+                            apiGet("/api/activity-log?limit=10"),
+                        ]);
+
+                    // Update counts
+                    document.getElementById("cmts-count").textContent = (
+                        cmts || []
+                    ).length;
+                    document.getElementById("modems-count").textContent = (
+                        modems || []
+                    ).length;
+                    document.getElementById("rules-count").textContent = (
+                        rules || []
+                    ).filter((r) => r.enabled).length;
+
+                    const pendingJobs = (jobs || []).filter((j) => j.status === "PENDING").length;
+                    const progressJobs = (jobs || []).filter((j) => j.status === "IN_PROGRESS").length;
+                    document.getElementById("jobs-pending").textContent = pendingJobs;
+                    document.getElementById("jobs-progress").textContent = progressJobs;
+
+                    // Update activity feed
+                    updateActivityFeed(activities || []);
+                } catch (error) {
+                    console.error("Failed to load dashboard stats:", error);
+                }
+            }
+
+            function updateActivityFeed(activities) {
+                const container = document.getElementById("activity-container");
+
+                if (!activities || activities.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>No activity yet</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = activities
+                    .map(
+                        (activity) => `
+                    <div class="activity-item">
+                        <div class="activity-info">
+                            <div class="activity-message">${activity.message || "System event"}</div>
+                            <div class="activity-time">${formatRelativeTime(activity.created_at)}</div>
+                        </div>
+                        <div class="status-badge ${activity.event_type?.toLowerCase()}">
+                            ${activity.event_type || "EVENT"}
+                        </div>
+                    </div>
+                `,
+                    )
+                    .join("");
+            }
+
+            // Load stats on page load
+            document.addEventListener("DOMContentLoaded", loadDashboardStats);
+        </script>
+    </body>
+</html>

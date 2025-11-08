@@ -1,0 +1,38 @@
+# Binaries
+firmware-upgrader
+*.db
+*.log
+
+# Build artifacts
+build/
+dist/
+
+# Development files
+.git
+.gitignore
+*.md
+!README.md
+
+# Test files
+*_test.go
+test.sh
+*.test
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (except README)
+docs/
+BUGFIX_*.md
+CODING_GUIDELINES.md
+PROJECT_SUMMARY.md
+QUICKSTART.md
+QUICK_REFERENCE.md
+BUILD_TROUBLESHOOTING.md
