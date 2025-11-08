@@ -292,31 +292,131 @@ Test by accessing: `http://192.168.88.1:8080`
 Press `Ctrl+C` to stop.
 
 ### Method 2: Background Process (Production)
+**Method 2: Container Deployment (Recommended)**
 
-**Create Startup Script:**
+MikroTik RouterOS 7.x supports containers. This is the recommended deployment method.
 
-```bash
-/system script add name="firmware-upgrader-start" source={
-  :execute script="/firmware-upgrader/firmware-upgrader -bind 192.168.88.1 -port 8080" file=firmware-upgrader.log
-}
-```
+**Prerequisites:**
+- RouterOS 7.4+ with container support
+- Internet access to pull image from GHCR
 
-**Run Script:**
-
-```bash
-/system script run firmware-upgrader-start
-```
-
-**Check Logs:**
+**Step 1: Enable Container Support**
 
 ```bash
-/file print where name="firmware-upgrader.log"
-/file get firmware-upgrader.log contents
+# Enable container mode
+/system device-mode update container=yes
+
+# Create bridge for containers (if not exists)
+/interface bridge add name=containers
+
+# Add veth interface
+/interface veth add name=veth-fw address=172.17.0.2/24 gateway=172.17.0.1
+
+# Add veth to bridge
+/interface bridge port add bridge=containers interface=veth-fw
+
+# Configure IP on bridge
+/ip address add address=172.17.0.1/24 interface=containers
+
+# Enable NAT for container internet access
+/ip firewall nat add chain=srcnat out-interface=ether1 action=masquerade
 ```
 
-### Method 3: System Scheduler (Auto-start)
+**Step 2: Create Storage Directory**
 
-**Create scheduler to start on boot:**
+```bash
+/container mounts add name=fw-data src=/firmware-upgrader/data dst=/app/data
+```
+
+**Step 3: Pull and Configure Container**
+
+```bash
+# Pull image from GHCR
+/container add remote-image=ghcr.io/awksedgreep/firmware-upgrader:latest \
+  interface=veth-fw \
+  root-dir=/firmware-upgrader/container \
+  mounts=fw-data \
+  hostname=firmware-upgrader \
+  envlist=fw-env \
+  logging=yes
+
+# Configure environment variables for security
+/container envs add name=fw-env key=BIND_ADDRESS value="0.0.0.0"
+/container envs add name=fw-env key=PORT value="8080"
+/container envs add name=fw-env key=DB_PATH value="/app/data/upgrader.db"
+/container envs add name=fw-env key=LOG_LEVEL value="info"
+/container envs add name=fw-env key=WORKERS value="4"
+```
+
+**IMPORTANT - Security Configuration:**
+
+If your router has a public IP, you have two options:
+
+**Option A: Bind container to internal IP only (most secure)**
+```bash
+# Change BIND_ADDRESS to container's internal IP
+/container envs set [find name=fw-env key=BIND_ADDRESS] value="172.17.0.2"
+
+# Access via: http://172.17.0.2:8080 from internal network
+```
+
+**Option B: Use firewall to restrict access**
+```bash
+# Allow access only from internal network
+/ip firewall filter add chain=forward \
+  dst-address=172.17.0.2 dst-port=8080 protocol=tcp \
+  src-address=!192.168.88.0/24 action=drop \
+  comment="Block external access to firmware-upgrader"
+```
+
+**Step 4: Start Container**
+
+```bash
+# Start the container
+/container start 0
+
+# Check status
+/container print
+
+# View logs
+/container shell 0
+```
+
+**Expected Output:**
+```
+# /container print
+ 0  name="firmware-upgrader" remote-image=ghcr.io/awksedgreep/firmware-upgrader:latest 
+    status=running interface=veth-fw
+```
+
+**Step 5: Port Forward (Optional)**
+
+To access from your main network:
+
+```bash
+# Forward port 8080 to container
+/ip firewall nat add chain=dstnat \
+  dst-address=192.168.88.1 dst-port=8080 protocol=tcp \
+  action=dst-nat to-addresses=172.17.0.2 to-ports=8080 \
+  comment="Forward to firmware-upgrader container"
+```
+
+**Access the web interface:**
+```
+http://192.168.88.1:8080
+```
+
+### Method 3: Native Binary (Advanced)
+
+For routers without container support, deploy the native binary:
+
+```bash
+# Start in foreground (for testing)
+cd /firmware-upgrader
+./firmware-upgrader -bind 192.168.88.1 -port 8080
+```
+
+**Auto-start with scheduler:**
 
 ```bash
 /system scheduler add name="firmware-upgrader-autostart" \
@@ -326,16 +426,21 @@ Press `Ctrl+C` to stop.
   comment="Auto-start Firmware Upgrader"
 ```
 
-**Verify scheduler:**
+---
+
+## Verification
+
+### Test Web Interface (Container)
 
 ```bash
-/system scheduler print
+# From router console
+/tool fetch url="http://172.17.0.2:8080/health" mode=http
+
+# Check container logs
+/log print where topics~"container"
 ```
 
-### Method 4: Container (RouterOS 7.4+)
-
-If your MikroTik supports containers:
-
+### Test Web Interface (Native)
 ```bash
 # Enable container mode
 /system/device-mode/update container=yes

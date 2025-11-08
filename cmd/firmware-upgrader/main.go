@@ -23,13 +23,13 @@ var (
 )
 
 func main() {
-	// Command line flags
+	// Command line flags with environment variable fallbacks
 	var (
-		dbPath   = flag.String("db", "upgrader.db", "Path to SQLite database")
-		bind     = flag.String("bind", "0.0.0.0", "Bind address/interface (e.g., 127.0.0.1, 192.168.1.1, or 0.0.0.0)")
-		port     = flag.Int("port", 8080, "HTTP server port")
-		logLevel = flag.String("log-level", "info", "Log level (debug, info, warn, error)")
-		workers  = flag.Int("workers", 0, "Number of concurrent upgrade workers (0 = use database setting)")
+		dbPath   = flag.String("db", getEnv("DB_PATH", "upgrader.db"), "Path to SQLite database (env: DB_PATH)")
+		bind     = flag.String("bind", getEnv("BIND_ADDRESS", "0.0.0.0"), "Bind address/interface (env: BIND_ADDRESS)")
+		port     = flag.Int("port", getEnvInt("PORT", 8080), "HTTP server port (env: PORT)")
+		logLevel = flag.String("log-level", getEnv("LOG_LEVEL", "info"), "Log level (debug, info, warn, error) (env: LOG_LEVEL)")
+		workers  = flag.Int("workers", getEnvInt("WORKERS", 0), "Number of concurrent upgrade workers (env: WORKERS, 0 = use database setting)")
 		showVer  = flag.Bool("version", false, "Show version and exit")
 	)
 	flag.Parse()
@@ -180,4 +180,22 @@ func setupLogging(level string) {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 		log.Warn().Str("provided", level).Msg("Unknown log level, using 'info'")
 	}
+}
+
+// getEnv gets an environment variable or returns a default value
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+// getEnvInt gets an environment variable as int or returns a default value
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intVal, err := strconv.Atoi(value); err == nil {
+			return intVal
+		}
+	}
+	return defaultValue
 }

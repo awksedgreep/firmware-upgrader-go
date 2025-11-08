@@ -10,6 +10,13 @@ WORKDIR /build
 # Install build dependencies for UPX
 RUN apk add --no-cache upx git
 
+# Environment variables for runtime configuration (can be overridden)
+# BIND_ADDRESS - Bind address/interface (default: 0.0.0.0)
+# PORT - HTTP server port (default: 8080)
+# DB_PATH - Path to SQLite database (default: upgrader.db)
+# LOG_LEVEL - Log level: debug, info, warn, error (default: info)
+# WORKERS - Number of concurrent workers (default: 0 = use database setting)
+
 # Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
@@ -45,6 +52,12 @@ EXPOSE 8080
 # Run as non-root
 USER nonroot:nonroot
 
-# Set default command
+# Environment variables (configure via container environment)
+ENV BIND_ADDRESS=0.0.0.0
+ENV PORT=8080
+ENV DB_PATH=/app/data/upgrader.db
+ENV LOG_LEVEL=info
+ENV WORKERS=0
+
+# Set default command (env vars take precedence over these defaults)
 ENTRYPOINT ["./firmware-upgrader"]
-CMD ["-port", "8080"]
