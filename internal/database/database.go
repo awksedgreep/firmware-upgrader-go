@@ -417,7 +417,6 @@ func (db *DB) CleanupStaleModems(offlineThresholdMinutes int, deleteThresholdDay
 	deleteThreshold := now - int64(deleteThresholdDays*24*60*60)
 
 	var markedOffline, deleted int64
-	var err error
 
 	// Retry up to 3 times with backoff for database locked errors
 	for attempt := 0; attempt < 3; attempt++ {
