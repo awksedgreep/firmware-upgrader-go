@@ -6,11 +6,12 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/awksedgreep/firmware-upgrader/internal/models"
 	"github.com/gosnmp/gosnmp"
 	"github.com/rs/zerolog/log"
-	"github.com/awksedgreep/firmware-upgrader/internal/models"
 )
 
 // DOCSIS OIDs for modem discovery
@@ -105,7 +106,13 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// DiscoverModems discovers all cable modems on the CMTS
+// modemInfo holds basic modem info from CMTS walk
+type modemInfo struct {
+	ifIndex string
+	mac     string
+}
+
+// DiscoverModems discovers all cable modems on the CMTS with concurrent polling
 func (c *Client) DiscoverModems(cmts *models.CMTS) ([]*models.CableModem, error) {
 	log.Info().
 		Str("cmts", cmts.Name).
@@ -125,58 +132,128 @@ func (c *Client) DiscoverModems(cmts *models.CMTS) ([]*models.CableModem, error)
 		Int("results", len(macResults)).
 		Msg("MAC table walk completed")
 
-	log.Debug().
-		Int("count", len(macResults)).
-		Msg("Retrieved MAC addresses")
-
-	modems := make([]*models.CableModem, 0, len(macResults))
-
+	// Extract basic modem info from walk results
+	modemInfos := make([]modemInfo, 0, len(macResults))
 	for _, result := range macResults {
-		// Extract interface index from OID
 		ifIndex := extractIndexFromOID(result.Name, OIDDocsIfCmtsCmStatusMacAddress)
 		if ifIndex == "" {
 			continue
 		}
 
-		// Parse MAC address
 		mac := parseMACAddress(result)
 		if mac == "" {
 			log.Warn().Str("oid", result.Name).Msg("Failed to parse MAC address")
 			continue
 		}
 
-		// Get IP address
-		ipAddress := c.getModemIP(ifIndex)
-
-		// Get signal level
-		signalLevel := c.getSignalLevel(ifIndex)
-
-		// Get status
-		status := c.getModemStatus(ifIndex)
-
-		// Get sysDescr (for modem-specific queries, we'd need the CM community string)
-		sysDescr := c.getModemSysDescr(cmts, mac)
-
-		modem := &models.CableModem{
-			CMTSID:          cmts.ID,
-			MACAddress:      mac,
-			IPAddress:       ipAddress,
-			SysDescr:        sysDescr,
-			CurrentFirmware: extractFirmwareFromSysDescr(sysDescr),
-			SignalLevel:     signalLevel,
-			Status:          status,
-			LastSeen:        time.Now(),
-		}
-
-		modems = append(modems, modem)
+		modemInfos = append(modemInfos, modemInfo{
+			ifIndex: ifIndex,
+			mac:     mac,
+		})
 	}
 
 	log.Info().
 		Str("cmts", cmts.Name).
+		Int("modems", len(modemInfos)).
+		Msg("Starting concurrent modem detail polling")
+
+	// Poll modem details concurrently with rate limiting
+	modems := c.pollModemsDetails(cmts, modemInfos)
+
+	log.Info().
+		Str("cmts", cmts.Name).
 		Int("discovered", len(modems)).
+		Dur("total_duration", time.Since(startTime)).
 		Msg("Modem discovery completed")
 
 	return modems, nil
+}
+
+// pollModemsDetails polls modem details concurrently with rate limiting
+func (c *Client) pollModemsDetails(cmts *models.CMTS, modemInfos []modemInfo) []*models.CableModem {
+	// Use worker pool to avoid UDP buffer overruns
+	// Limit concurrent SNMP queries to avoid overwhelming the CMTS
+	const maxWorkers = 50
+	const maxQueriesPerSecond = 200
+
+	workers := maxWorkers
+	if len(modemInfos) < workers {
+		workers = len(modemInfos)
+	}
+
+	// Create work queue and results channel
+	workQueue := make(chan modemInfo, len(modemInfos))
+	results := make(chan *models.CableModem, len(modemInfos))
+
+	// Rate limiter - allow burst but limit sustained rate
+	ticker := time.NewTicker(time.Second / time.Duration(maxQueriesPerSecond))
+	defer ticker.Stop()
+
+	var wg sync.WaitGroup
+
+	// Start workers
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+			for info := range workQueue {
+				// Rate limit
+				<-ticker.C
+
+				// Poll modem details
+				modem := c.pollSingleModem(cmts, info)
+				if modem != nil {
+					results <- modem
+				}
+			}
+		}(i)
+	}
+
+	// Queue all work
+	for _, info := range modemInfos {
+		workQueue <- info
+	}
+	close(workQueue)
+
+	// Wait for all workers to complete
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	// Collect results
+	modems := make([]*models.CableModem, 0, len(modemInfos))
+	for modem := range results {
+		modems = append(modems, modem)
+	}
+
+	return modems
+}
+
+// pollSingleModem polls details for a single modem
+func (c *Client) pollSingleModem(cmts *models.CMTS, info modemInfo) *models.CableModem {
+	// Get IP address
+	ipAddress := c.getModemIP(info.ifIndex)
+
+	// Get signal level
+	signalLevel := c.getSignalLevel(info.ifIndex)
+
+	// Get status
+	status := c.getModemStatus(info.ifIndex)
+
+	// Get sysDescr (for modem-specific queries, we'd need the CM community string)
+	sysDescr := c.getModemSysDescr(cmts, info.mac)
+
+	return &models.CableModem{
+		CMTSID:          cmts.ID,
+		MACAddress:      info.mac,
+		IPAddress:       ipAddress,
+		SysDescr:        sysDescr,
+		CurrentFirmware: extractFirmwareFromSysDescr(sysDescr),
+		SignalLevel:     signalLevel,
+		Status:          status,
+		LastSeen:        time.Now(),
+	}
 }
 
 // getModemIP retrieves the IP address for a modem by interface index

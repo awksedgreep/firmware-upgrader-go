@@ -114,6 +114,9 @@ func (e *Engine) Start(ctx context.Context) error {
 	// Start rule evaluation scheduler
 	go e.ruleEvaluationScheduler(ctx)
 
+	// Start cleanup scheduler
+	go e.cleanupScheduler(ctx)
+
 	<-ctx.Done()
 	log.Info().Msg("Upgrade engine shutting down")
 	close(e.jobs)
@@ -727,5 +730,64 @@ func (e *Engine) runDiscoveryForAllCMTS() {
 		log.Info().
 			Int("cmts_count", discoveryCount).
 			Msg("Triggered discovery for all enabled CMTS")
+	}
+}
+
+// cleanupScheduler periodically cleans up stale modems
+func (e *Engine) cleanupScheduler(ctx context.Context) {
+	// Run cleanup every hour
+	ticker := time.NewTicker(1 * time.Hour)
+	defer ticker.Stop()
+
+	log.Info().Msg("Cleanup scheduler started")
+
+	// Run once immediately on startup
+	e.runCleanup()
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info().Msg("Cleanup scheduler stopping")
+			return
+		case <-ticker.C:
+			e.runCleanup()
+		}
+	}
+}
+
+// runCleanup marks stale modems as offline and deletes very old modems
+func (e *Engine) runCleanup() {
+	// Mark modems offline if not seen in 10 minutes (2x discovery interval + buffer)
+	// Delete modems that have been offline for 7 days
+	markedOffline, deleted, err := e.db.CleanupStaleModems(10, 7)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to cleanup stale modems")
+		return
+	}
+
+	if markedOffline > 0 || deleted > 0 {
+		log.Info().
+			Int("marked_offline", markedOffline).
+			Int("deleted", deleted).
+			Msg("Stale modem cleanup completed")
+
+		// Log activity
+		if markedOffline > 0 {
+			e.db.LogActivity(&models.ActivityLog{
+				EventType:  models.EventSystemStarted, // Reuse existing event type
+				EntityType: "system",
+				EntityID:   0,
+				Message:    fmt.Sprintf("Marked %d stale modems as offline", markedOffline),
+			})
+		}
+
+		if deleted > 0 {
+			e.db.LogActivity(&models.ActivityLog{
+				EventType:  models.EventSystemStarted,
+				EntityType: "system",
+				EntityID:   0,
+				Message:    fmt.Sprintf("Deleted %d old offline modems", deleted),
+			})
+		}
 	}
 }

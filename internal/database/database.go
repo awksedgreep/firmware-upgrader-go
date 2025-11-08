@@ -400,6 +400,40 @@ func (db *DB) UpsertModem(modem *models.CableModem) error {
 	return nil
 }
 
+// CleanupStaleModems marks modems as offline if not seen recently and deletes very old modems
+func (db *DB) CleanupStaleModems(offlineThresholdMinutes int, deleteThresholdDays int) (int, int, error) {
+	now := time.Now().Unix()
+	offlineThreshold := now - int64(offlineThresholdMinutes*60)
+	deleteThreshold := now - int64(deleteThresholdDays*24*60*60)
+
+	// Mark modems as offline if not seen in X minutes
+	result, err := db.conn.Exec(`
+		UPDATE cable_modem
+		SET status = 'offline'
+		WHERE last_seen < ?
+		AND status != 'offline'`,
+		offlineThreshold)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to mark stale modems offline: %w", err)
+	}
+
+	markedOffline, _ := result.RowsAffected()
+
+	// Delete modems that have been offline for Y days
+	result, err = db.conn.Exec(`
+		DELETE FROM cable_modem
+		WHERE last_seen < ?
+		AND status = 'offline'`,
+		deleteThreshold)
+	if err != nil {
+		return int(markedOffline), 0, fmt.Errorf("failed to delete old modems: %w", err)
+	}
+
+	deleted, _ := result.RowsAffected()
+
+	return int(markedOffline), int(deleted), nil
+}
+
 // GetModem retrieves a modem by ID
 func (db *DB) GetModem(id int) (*models.CableModem, error) {
 	var modem models.CableModem
