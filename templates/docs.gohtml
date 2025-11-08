@@ -458,8 +458,9 @@ cp /app/data/upgrader.db /backups/upgrader-$(date +%Y%m%d).db
             </div>
 
 <script>
-// Smooth scroll to anchors
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scroll to anchors
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
                     const target = document.querySelector(this.getAttribute('href'));
@@ -495,6 +496,7 @@ cp /app/data/upgrader.db /backups/upgrader-$(date +%Y%m%d).db
 
             document.querySelectorAll('.docs-section').forEach(section => {
                 observer.observe(section);
-            });
+    });
+});
 </script>
 {{end}}
