@@ -222,15 +222,18 @@ func (db *DB) migrate() error {
 
 	// Initialize default settings
 	defaults := map[string]string{
-		"workers":               "5",
-		"discovery_interval":    "60",
-		"evaluation_interval":   "120",
-		"job_timeout":           "300",
-		"retry_attempts":        "3",
-		"signal_level_min":      "-15.0",
-		"signal_level_max":      "15.0",
-		"max_upgrades_per_cmts": "10",
-		"log_level":             "info",
+		"workers":                 "5",
+		"discovery_interval":      "60",
+		"evaluation_interval":     "120",
+		"job_timeout":             "300",
+		"retry_attempts":          "3",
+		"signal_level_min":        "-15.0",
+		"signal_level_max":        "15.0",
+		"max_upgrades_per_cmts":   "10",
+		"log_level":               "info",
+		"cleanup_interval":        "3600", // seconds (1 hour)
+		"cleanup_offline_minutes": "10",   // mark offline after X minutes
+		"cleanup_delete_days":     "7",    // delete after X days offline
 	}
 
 	for key, value := range defaults {

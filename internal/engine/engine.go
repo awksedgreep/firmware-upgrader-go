@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -735,11 +736,28 @@ func (e *Engine) runDiscoveryForAllCMTS() {
 
 // cleanupScheduler periodically cleans up stale modems
 func (e *Engine) cleanupScheduler(ctx context.Context) {
-	// Run cleanup every hour
-	ticker := time.NewTicker(1 * time.Hour)
+	// Get cleanup interval from settings
+	settings, err := e.db.ListSettings()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to load cleanup settings, using defaults")
+		settings = map[string]string{
+			"cleanup_interval":        "3600",
+			"cleanup_offline_minutes": "10",
+			"cleanup_delete_days":     "7",
+		}
+	}
+
+	cleanupInterval := 3600 // default 1 hour
+	if val, err := strconv.Atoi(settings["cleanup_interval"]); err == nil {
+		cleanupInterval = val
+	}
+
+	ticker := time.NewTicker(time.Duration(cleanupInterval) * time.Second)
 	defer ticker.Stop()
 
-	log.Info().Msg("Cleanup scheduler started")
+	log.Info().
+		Int("interval_seconds", cleanupInterval).
+		Msg("Cleanup scheduler started")
 
 	// Run once immediately on startup
 	e.runCleanup()
@@ -757,9 +775,24 @@ func (e *Engine) cleanupScheduler(ctx context.Context) {
 
 // runCleanup marks stale modems as offline and deletes very old modems
 func (e *Engine) runCleanup() {
-	// Mark modems offline if not seen in 10 minutes (2x discovery interval + buffer)
-	// Delete modems that have been offline for 7 days
-	markedOffline, deleted, err := e.db.CleanupStaleModems(10, 7)
+	// Get cleanup thresholds from settings
+	settings, err := e.db.ListSettings()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to load cleanup settings")
+		return
+	}
+
+	offlineMinutes := 10 // default
+	if val, err := strconv.Atoi(settings["cleanup_offline_minutes"]); err == nil {
+		offlineMinutes = val
+	}
+
+	deleteDays := 7 // default
+	if val, err := strconv.Atoi(settings["cleanup_delete_days"]); err == nil {
+		deleteDays = val
+	}
+
+	markedOffline, deleted, err := e.db.CleanupStaleModems(offlineMinutes, deleteDays)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to cleanup stale modems")
 		return
@@ -769,6 +802,8 @@ func (e *Engine) runCleanup() {
 		log.Info().
 			Int("marked_offline", markedOffline).
 			Int("deleted", deleted).
+			Int("offline_threshold_minutes", offlineMinutes).
+			Int("delete_threshold_days", deleteDays).
 			Msg("Stale modem cleanup completed")
 
 		// Log activity
