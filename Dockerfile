@@ -43,8 +43,9 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /build/firmware-upgrader .
 
-# Copy web UI
+# Copy web UI and templates
 COPY --from=builder /build/web ./web
+COPY --from=builder /build/templates ./templates
 
 # Expose port
 EXPOSE 8080

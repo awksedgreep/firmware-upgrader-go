@@ -11,6 +11,13 @@ make mikrotik
 
 This creates optimized, compressed binaries for ARM64 and AMD64 MikroTik routers in the `build/` directory.
 
+### Create Deployment Packages
+```bash
+make package-all
+```
+
+This creates complete deployment packages with binary, templates, and web assets as `.tar.gz` archives.
+
 ### Build All Linux Targets
 ```bash
 make all

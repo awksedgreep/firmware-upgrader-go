@@ -281,6 +281,43 @@ dev: ## Run in development mode with live reload (requires air)
 		exit 1; \
 	fi
 
+package-linux-arm64: linux-arm64 ## Create deployment package for Linux ARM64
+	@echo "Creating deployment package for Linux ARM64..."
+	@mkdir -p $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64
+	@cp $(BUILD_DIR)/$(LINUX_ARM64) $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64/firmware-upgrader
+	@cp -r templates $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64/
+	@cp -r web $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64/
+	@cd $(BUILD_DIR) && tar czf firmware-upgrader-$(VERSION)-linux-arm64.tar.gz firmware-upgrader-$(VERSION)-linux-arm64
+	@rm -rf $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64
+	@echo "✅ Package created: $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64.tar.gz"
+	@ls -lh $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64.tar.gz
+
+package-linux-amd64: linux-amd64 ## Create deployment package for Linux AMD64
+	@echo "Creating deployment package for Linux AMD64..."
+	@mkdir -p $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-amd64
+	@cp $(BUILD_DIR)/$(LINUX_AMD64) $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-amd64/firmware-upgrader
+	@cp -r templates $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-amd64/
+	@cp -r web $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-amd64/
+	@cd $(BUILD_DIR) && tar czf firmware-upgrader-$(VERSION)-linux-amd64.tar.gz firmware-upgrader-$(VERSION)-linux-amd64
+	@rm -rf $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-amd64
+	@echo "✅ Package created: $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-amd64.tar.gz"
+	@ls -lh $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-amd64.tar.gz
+
+package-all: package-linux-arm64 package-linux-amd64 ## Create deployment packages for all platforms
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════════╗"
+	@echo "║  Deployment packages created                                 ║"
+	@echo "╚══════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@ls -lh $(BUILD_DIR)/*.tar.gz
+	@echo ""
+	@echo "Deploy with:"
+	@echo "  1. scp $(BUILD_DIR)/firmware-upgrader-$(VERSION)-linux-arm64.tar.gz user@host:/tmp/"
+	@echo "  2. ssh user@host"
+	@echo "  3. tar xzf /tmp/firmware-upgrader-$(VERSION)-linux-arm64.tar.gz"
+	@echo "  4. cd firmware-upgrader-$(VERSION)-linux-arm64"
+	@echo "  5. ./firmware-upgrader"
+
 .PHONY: check-upx
 check-upx:
 	@if ! command -v upx >/dev/null 2>&1; then \
