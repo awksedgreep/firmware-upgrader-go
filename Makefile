@@ -184,18 +184,31 @@ ghcr-build: ## Build container image for GHCR (multi-platform)
 		exit 1; \
 	fi
 	@echo "Image: $(GHCR_IMAGE):$(VERSION)"
-	podman build --platform linux/amd64,linux/arm64 \
-		-t $(GHCR_IMAGE):$(VERSION) \
-		-t $(GHCR_IMAGE):latest \
+	@echo "Building AMD64 image..."
+	podman build --platform linux/amd64 \
+		-t $(GHCR_IMAGE):$(VERSION)-amd64 \
 		--build-arg VERSION=$(VERSION) \
 		--build-arg BUILD_TIME=$(BUILD_TIME) \
 		.
+	@echo "Building ARM64 image..."
+	podman build --platform linux/arm64 \
+		-t $(GHCR_IMAGE):$(VERSION)-arm64 \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_TIME=$(BUILD_TIME) \
+		.
+	@echo "Creating manifest list..."
+	podman manifest create $(GHCR_IMAGE):$(VERSION) \
+		$(GHCR_IMAGE):$(VERSION)-amd64 \
+		$(GHCR_IMAGE):$(VERSION)-arm64
+	podman manifest create $(GHCR_IMAGE):latest \
+		$(GHCR_IMAGE):$(VERSION)-amd64 \
+		$(GHCR_IMAGE):$(VERSION)-arm64
 	@echo "✅ Built multi-platform image: $(GHCR_IMAGE):$(VERSION)"
 
 ghcr-push: ghcr-login ghcr-build ## Build and push container image to GHCR
 	@echo "Pushing to GitHub Container Registry..."
-	podman manifest push $(GHCR_IMAGE):$(VERSION) $(GHCR_IMAGE):$(VERSION)
-	podman manifest push $(GHCR_IMAGE):latest $(GHCR_IMAGE):latest
+	podman manifest push $(GHCR_IMAGE):$(VERSION) docker://$(GHCR_IMAGE):$(VERSION)
+	podman manifest push $(GHCR_IMAGE):latest docker://$(GHCR_IMAGE):latest
 	@echo "✅ Pushed to GHCR:"
 	@echo "   $(GHCR_IMAGE):$(VERSION)"
 	@echo "   $(GHCR_IMAGE):latest"
@@ -208,15 +221,30 @@ ghcr-push-minimal: ghcr-login ## Build and push minimal container image to GHCR
 		echo "ERROR: podman not found. Install from: https://podman.io/"; \
 		exit 1; \
 	fi
-	podman build --platform linux/amd64,linux/arm64 \
+	@echo "Building AMD64 minimal image..."
+	podman build --platform linux/amd64 \
 		-f Dockerfile.minimal \
-		-t $(GHCR_IMAGE):$(VERSION)-minimal \
-		-t $(GHCR_IMAGE):minimal \
+		-t $(GHCR_IMAGE):$(VERSION)-minimal-amd64 \
 		--build-arg VERSION=$(VERSION) \
 		--build-arg BUILD_TIME=$(BUILD_TIME) \
 		.
-	podman manifest push $(GHCR_IMAGE):$(VERSION)-minimal $(GHCR_IMAGE):$(VERSION)-minimal
-	podman manifest push $(GHCR_IMAGE):minimal $(GHCR_IMAGE):minimal
+	@echo "Building ARM64 minimal image..."
+	podman build --platform linux/arm64 \
+		-f Dockerfile.minimal \
+		-t $(GHCR_IMAGE):$(VERSION)-minimal-arm64 \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_TIME=$(BUILD_TIME) \
+		.
+	@echo "Creating manifest list..."
+	podman manifest create $(GHCR_IMAGE):$(VERSION)-minimal \
+		$(GHCR_IMAGE):$(VERSION)-minimal-amd64 \
+		$(GHCR_IMAGE):$(VERSION)-minimal-arm64
+	podman manifest create $(GHCR_IMAGE):minimal \
+		$(GHCR_IMAGE):$(VERSION)-minimal-amd64 \
+		$(GHCR_IMAGE):$(VERSION)-minimal-arm64
+	@echo "Pushing to GHCR..."
+	podman manifest push $(GHCR_IMAGE):$(VERSION)-minimal docker://$(GHCR_IMAGE):$(VERSION)-minimal
+	podman manifest push $(GHCR_IMAGE):minimal docker://$(GHCR_IMAGE):minimal
 	@echo "✅ Pushed minimal image to GHCR:"
 	@echo "   $(GHCR_IMAGE):$(VERSION)-minimal"
 	@echo "   $(GHCR_IMAGE):minimal"
