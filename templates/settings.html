@@ -1,0 +1,451 @@
+{{define "content"}}
+<style>
+.settings-container {
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: var(--spacing-xl);
+            }
+
+            .settings-header {
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .settings-header h1 {
+                margin: 0 0 var(--spacing-sm) 0;
+                color: var(--text-primary);
+            }
+
+            .settings-header p {
+                color: var(--text-secondary);
+                margin: 0;
+            }
+
+            .settings-grid {
+                display: grid;
+                gap: var(--spacing-lg);
+            }
+
+            .settings-card {
+                background: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-xl);
+                transition: box-shadow 0.3s ease;
+            }
+
+            .settings-card:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-md);
+                margin-bottom: var(--spacing-lg);
+                padding-bottom: var(--spacing-md);
+                border-bottom: 2px solid var(--border-color);
+            }
+
+            .card-icon {
+                font-size: 1.8em;
+            }
+
+            .card-title {
+                flex: 1;
+            }
+
+            .card-title h2 {
+                margin: 0 0 var(--spacing-xs) 0;
+                font-size: 1.3em;
+                color: var(--text-primary);
+            }
+
+            .card-title p {
+                margin: 0;
+                font-size: 0.9em;
+                color: var(--text-secondary);
+            }
+
+            .settings-form {
+                display: grid;
+                gap: var(--spacing-lg);
+            }
+
+            .form-group {
+                display: grid;
+                gap: var(--spacing-sm);
+            }
+
+            .form-group label {
+                font-weight: 600;
+                color: var(--text-primary);
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-xs);
+            }
+
+            .form-group .label-badge {
+                display: inline-block;
+                background: var(--primary-color);
+                color: white;
+                padding: 2px 8px;
+                border-radius: var(--radius-sm);
+                font-size: 0.7em;
+                font-weight: 600;
+            }
+
+            .form-group .help-text {
+                font-size: 0.85em;
+                color: var(--text-secondary);
+                line-height: 1.4;
+            }
+
+            .input-group {
+                display: flex;
+                gap: var(--spacing-sm);
+                align-items: center;
+            }
+
+            .input-group input {
+                flex: 1;
+                padding: var(--spacing-md);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                font-size: 1em;
+                transition: border-color 0.2s;
+            }
+
+            .input-group input:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .input-group .unit {
+                color: var(--text-secondary);
+                font-weight: 500;
+                min-width: 80px;
+            }
+
+            .input-range-wrapper {
+                display: grid;
+                gap: var(--spacing-sm);
+            }
+
+            .range-labels {
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.8em;
+                color: var(--text-secondary);
+            }
+
+            input[type="range"] {
+                width: 100%;
+                height: 6px;
+                border-radius: 3px;
+                background: var(--border-color);
+                outline: none;
+                -webkit-appearance: none;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: var(--primary-color);
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+
+            input[type="range"]::-webkit-slider-thumb:hover {
+                transform: scale(1.2);
+            }
+
+            input[type="range"]::-moz-range-thumb {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: var(--primary-color);
+                cursor: pointer;
+                border: none;
+                transition: transform 0.2s;
+            }
+
+            input[type="range"]::-moz-range-thumb:hover {
+                transform: scale(1.2);
+            }
+
+            .current-value {
+                display: inline-block;
+                background: var(--background);
+                padding: var(--spacing-xs) var(--spacing-md);
+                border-radius: var(--radius-md);
+                font-weight: 600;
+                color: var(--primary-color);
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: var(--spacing-md);
+                justify-content: flex-end;
+                margin-top: var(--spacing-lg);
+                padding-top: var(--spacing-lg);
+                border-top: 1px solid var(--border-color);
+            }
+
+            .btn {
+                padding: var(--spacing-md) var(--spacing-xl);
+                border: none;
+                border-radius: var(--radius-md);
+                font-size: 1em;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .btn-primary {
+                background: var(--primary-color);
+                color: white;
+            }
+
+            .btn-primary:hover:not(:disabled) {
+                background: var(--primary-hover);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            }
+
+            .btn-secondary {
+                background: var(--background);
+                color: var(--text-primary);
+                border: 1px solid var(--border-color);
+            }
+
+            .btn-secondary:hover:not(:disabled) {
+                background: var(--surface);
+            }
+
+            .btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .alert {
+                padding: var(--spacing-md);
+                border-radius: var(--radius-md);
+                margin-bottom: var(--spacing-lg);
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-sm);
+            }
+
+            .alert-success {
+                background: #d1fae5;
+                color: #065f46;
+                border: 1px solid #6ee7b7;
+            }
+
+            .alert-error {
+                background: #fee2e2;
+                color: #991b1b;
+                border: 1px solid #fca5a5;
+            }
+
+            .alert-warning {
+                background: #fef3c7;
+                color: #92400e;
+                border: 1px solid #fcd34d;
+            }
+
+            .spinner {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                border: 2px solid var(--primary-color);
+                border-top-color: transparent;
+                border-radius: 50%;
+                animation: spin 0.6s linear infinite;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: var(--spacing-md);
+                margin-top: var(--spacing-md);
+            }
+
+            .stat-box {
+                background: var(--background);
+                padding: var(--spacing-md);
+                border-radius: var(--radius-md);
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 1.8em;
+                font-weight: 700;
+                color: var(--primary-color);
+            }
+
+            .stat-label {
+                font-size: 0.85em;
+                color: var(--text-secondary);
+                margin-top: var(--spacing-xs);
+            }
+</style>
+
+
+
+<script>
+let originalSettings = {};
+
+            // Load settings on page load
+            async function loadSettings() {
+                try {
+                    const settings = await apiGet('/api/settings');
+                    originalSettings = { ...settings };
+
+                    // Populate form fields
+                    document.getElementById('workers').value = settings.workers || 5;
+                    document.getElementById('discovery_interval').value = settings.discovery_interval || 60;
+                    document.getElementById('job_timeout').value = settings.job_timeout || 300;
+                    document.getElementById('retry_attempts').value = settings.retry_attempts || 3;
+                    document.getElementById('max_upgrades_per_cmts').value = settings.max_upgrades_per_cmts || 10;
+
+                    // Update range displays
+                    updateRangeDisplay('workers');
+                    updateRangeDisplay('max_upgrades_per_cmts');
+                } catch (error) {
+                    showAlert('Failed to load settings: ' + error.message, 'error');
+                }
+            }
+
+            // Update range slider display
+            function updateRangeDisplay(id) {
+                const input = document.getElementById(id);
+                const display = document.getElementById(id + '-value');
+                if (input && display) {
+                    display.textContent = input.value;
+                }
+            }
+
+            // Setup range slider listeners
+            document.getElementById('workers').addEventListener('input', (e) => updateRangeDisplay('workers'));
+            document.getElementById('max_upgrades_per_cmts').addEventListener('input', (e) => updateRangeDisplay('max_upgrades_per_cmts'));
+
+            // Save performance settings
+            document.getElementById('performance-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+                    const settings = {
+                        workers: document.getElementById('workers').value,
+                        max_upgrades_per_cmts: document.getElementById('max_upgrades_per_cmts').value,
+                        // Keep other settings unchanged
+                        discovery_interval: originalSettings.discovery_interval || '60',
+                        job_timeout: originalSettings.job_timeout || '300',
+                        retry_attempts: originalSettings.retry_attempts || '3'
+                    };
+
+                    await apiPut('/api/settings', settings);
+                    showAlert('Performance settings saved successfully!', 'success');
+                    await loadSettings();
+                } catch (error) {
+                    showAlert('Failed to save settings: ' + error.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            });
+
+            // Save timing settings
+            document.getElementById('timing-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+                    const settings = {
+                        discovery_interval: document.getElementById('discovery_interval').value,
+                        job_timeout: document.getElementById('job_timeout').value,
+                        retry_attempts: document.getElementById('retry_attempts').value,
+                        // Keep other settings unchanged
+                        workers: originalSettings.workers || '5',
+                        max_upgrades_per_cmts: originalSettings.max_upgrades_per_cmts || '10'
+                    };
+
+                    await apiPut('/api/settings', settings);
+                    showAlert('Timing settings saved successfully!', 'success');
+                    await loadSettings();
+                } catch (error) {
+                    showAlert('Failed to save settings: ' + error.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            });
+
+            // Show alert message
+            function showAlert(message, type = 'success') {
+                const container = document.getElementById('alert-container');
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type}`;
+                alert.innerHTML = `
+                    <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}</span>
+                    <span>${message}</span>
+                `;
+                container.innerHTML = '';
+                container.appendChild(alert);
+
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => alert.remove(), 5000);
+            }
+
+            // Load system stats
+            async function loadStats() {
+                try {
+                    const [health, stats] = await Promise.all([
+                        fetch('/health').then(r => r.json()),
+                        apiGet('/api/stats')
+                    ]);
+
+                    document.getElementById('stat-version').textContent = health.version || 'Unknown';
+                    document.getElementById('stat-uptime').textContent = formatUptime(health.uptime || 0);
+                    document.getElementById('stat-jobs').textContent = stats.active_jobs || 0;
+                    document.getElementById('stat-cmts').textContent = stats.total_cmts || 0;
+                } catch (error) {
+                    console.error('Failed to load stats:', error);
+                }
+            }
+
+            // Format uptime
+            function formatUptime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                if (hours > 24) {
+                    return Math.floor(hours / 24) + 'd';
+                }
+                return hours + 'h ' + minutes + 'm';
+            }
+
+            // Initialize
+            loadSettings();
+            loadStats();
+
+            // Refresh stats every 30 seconds
+            setInterval(loadStats, 30000);
+</script>
+{{end}}

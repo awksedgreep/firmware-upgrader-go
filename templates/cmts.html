@@ -1,0 +1,406 @@
+{{define "content"}}
+<style>
+.content-wrapper {
+                display: flex;
+                flex-direction: column;
+                min-height: calc(100vh - 200px);
+            }
+
+            .add-form-section {
+                background-color: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-xl);
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .devices-section {
+                background-color: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-xl);
+            }
+
+            .form-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: var(--spacing-lg);
+            }
+
+            .form-row.full {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                grid-column: 1 / -1;
+                display: flex;
+                justify-content: flex-end;
+                gap: var(--spacing-md);
+                margin-top: var(--spacing-lg);
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+            }
+
+            .action-links {
+                display: flex;
+                gap: var(--spacing-md);
+            }
+
+            .action-links a {
+                color: var(--primary-color);
+                text-decoration: none;
+                font-size: 0.9em;
+                padding: var(--spacing-xs) var(--spacing-sm);
+                border-radius: var(--radius-sm);
+                transition: background-color 0.2s ease;
+            }
+
+            .action-links a:hover {
+                background-color: var(--background);
+                text-decoration: none;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: var(--spacing-xl);
+                color: var(--text-secondary);
+            }
+
+            .empty-state-icon {
+                font-size: 2.5em;
+                margin-bottom: var(--spacing-md);
+            }
+</style>
+
+<!-- Page Header -->
+            <div class="page-header">
+                <div></div>
+                    <h1 class="page-title">CMTS Management</h1>
+                    <p class="page-subtitle">
+                        Add, configure, and manage your Cable Modem Termination
+                        System devices
+                    </p>
+                </div>
+                <div style="display: flex; gap: var(--spacing-md);">
+                    <button type="button" class="button primary" onclick="triggerDiscovery()">
+                        🔍 Discover All
+                    </button>
+                    <button type="button" class="button secondary" onclick="triggerRuleEvaluation()">
+                        ⚙️ Evaluate Rules
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add New CMTS Section -->
+            <div class="add-form-section">
+                <h2 class="section-title">Add New CMTS</h2>
+                <form id="add-cmts-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                placeholder="e.g., Main Office CMTS"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="ip_address">IP Address</label>
+                            <input
+                                type="text"
+                                id="ip_address"
+                                name="ip_address"
+                                placeholder="e.g., 192.168.100.1"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="community_read"
+                                >SNMP Read Community</label
+                            >
+                            <input
+                                type="text"
+                                id="community_read"
+                                name="community_read"
+                                value="public"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="community_write"
+                                >SNMP Write Community</label
+                            >
+                            <input
+                                type="text"
+                                id="community_write"
+                                name="community_write"
+                                placeholder="(Optional)"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cm_community_string"
+                                >Cable Modem Community</label
+                            >
+                            <input
+                                type="text"
+                                id="cm_community_string"
+                                name="cm_community_string"
+                                placeholder="For polling modems directly"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="snmp_port">SNMP Port</label>
+                            <input
+                                type="number"
+                                id="snmp_port"
+                                name="snmp_port"
+                                value="161"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="snmp_version">SNMP Version</label>
+                            <select id="snmp_version" name="snmp_version">
+                                <option value="1">1</option>
+                                <option value="2" selected>2c</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="enabled">Status</label>
+                            <select id="enabled" name="enabled">
+                                <option value="true" selected>Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary">Add CMTS</button>
+                    </div>
+                </form>
+                <div id="form-message" class="message"></div>
+            </div>
+
+            <!-- Existing CMTS Devices Section -->
+            <div class="devices-section">
+                <h2 class="section-title">CMTS Devices</h2>
+                <div class="table-wrapper">
+                    <table id="cmts-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>IP Address</th>
+                                <th>SNMP Port</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" style="text-align: center">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+<script>
+// Manual trigger functions
+            async function triggerDiscovery() {
+                if (!confirm('Trigger discovery for all enabled CMTS devices?')) {
+                    return;
+                }
+
+                try {
+                    const response = await apiPost('/api/discovery/trigger', {});
+                    showNotification('Discovery started for ' + response.cmts_triggered + ' CMTS devices', 'success');
+                } catch (error) {
+                    showNotification('Failed to trigger discovery: ' + error.message, 'error');
+                }
+            }
+
+            async function triggerRuleEvaluation() {
+                if (!confirm('Evaluate all upgrade rules against discovered modems?')) {
+                    return;
+                }
+
+                try {
+                    await apiPost('/api/rules/evaluate', {});
+                    showNotification('Rule evaluation started', 'success');
+                } catch (error) {
+                    showNotification('Failed to trigger rule evaluation: ' + error.message, 'error');
+                }
+            }
+
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 16px 24px;
+                    background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                    color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 9999;
+                    animation: slideIn 0.3s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const cmtsTableBody =
+                    document.querySelector("#cmts-table tbody");
+                const addCmtsForm = document.getElementById("add-cmts-form");
+                const formMessage = document.getElementById("form-message");
+
+                // Function to fetch and display CMTS list
+                const fetchCmts = async () => {
+                    try {
+                        const cmtsList = await apiGet("/api/cmts");
+
+                        cmtsTableBody.innerHTML = "";
+
+                        if (!cmtsList || cmtsList.length === 0) {
+                            cmtsTableBody.innerHTML =
+                                '<tr><td colspan="6" class="empty-state">No CMTS devices found. Add one using the form above.</td></tr>';
+                            return;
+                        }
+
+                        cmtsList.forEach((cmts) => {
+                            const row = document.createElement("tr");
+                            const statusClass = cmts.enabled
+                                ? "status-badge enabled"
+                                : "status-badge disabled";
+                            const statusText = cmts.enabled
+                                ? "Enabled"
+                                : "Disabled";
+
+                            row.innerHTML = `
+                            <td>${cmts.id}</td>
+                            <td>${cmts.name}</td>
+                            <td>${cmts.ip_address}</td>
+                            <td>${cmts.snmp_port}</td>
+                            <td><span class="${statusClass}">${statusText}</span></td>
+                            <td>
+                                <div class="action-links">
+                                    <a href="/edit-cmts.html?id=${cmts.id}">Edit</a>
+                                    <a href="#" class="delete-link" data-id="${cmts.id}">Delete</a>
+                                </div>
+                            </td>
+                        `;
+                            cmtsTableBody.appendChild(row);
+                        });
+                    } catch (error) {
+                        console.error("Failed to fetch CMTS list:", error);
+                        cmtsTableBody.innerHTML =
+                            '<tr><td colspan="6" style="color: red; text-align: center;">Error loading CMTS devices. Is the server running?</td></tr>';
+                    }
+                };
+
+                // Event listener for form submission
+                addCmtsForm.addEventListener("submit", async (event) => {
+                    event.preventDefault();
+
+                    const formData = new FormData(addCmtsForm);
+                    const data = {
+                        name: formData.get("name"),
+                        ip_address: formData.get("ip_address"),
+                        community_read: formData.get("community_read"),
+                        community_write: formData.get("community_write"),
+                        cm_community_string: formData.get(
+                            "cm_community_string",
+                        ),
+                        snmp_port: parseInt(formData.get("snmp_port"), 10),
+                        snmp_version: parseInt(
+                            formData.get("snmp_version"),
+                            10,
+                        ),
+                        enabled: formData.get("enabled") === "true",
+                    };
+
+                    try {
+                        const result = await apiPost("/api/cmts", data);
+                        showMessage(
+                            `Successfully added CMTS with ID ${result.id}.`,
+                            "success",
+                            formMessage,
+                            3000,
+                        );
+                        addCmtsForm.reset();
+                        fetchCmts();
+                    } catch (error) {
+                        showMessage(
+                            `Error: ${error.message}`,
+                            "error",
+                            formMessage,
+                            5000,
+                        );
+                    }
+                });
+
+                // Event delegation for delete links
+                cmtsTableBody.addEventListener("click", async (event) => {
+                    if (event.target.classList.contains("delete-link")) {
+                        event.preventDefault();
+                        const cmtsId = event.target.dataset.id;
+                        const cmtsName = event.target
+                            .closest("tr")
+                            .querySelector("td:nth-child(2)").textContent;
+
+                        if (
+                            confirm(
+                                `Are you sure you want to delete "${cmtsName}"? This cannot be undone.`,
+                            )
+                        ) {
+                            try {
+                                await apiDelete(`/api/cmts/${cmtsId}`);
+                                showMessage(
+                                    "CMTS deleted successfully.",
+                                    "success",
+                                    formMessage,
+                                    3000,
+                                );
+                                fetchCmts();
+                            } catch (error) {
+                                showMessage(
+                                    `Error: ${error.message}`,
+                                    "error",
+                                    formMessage,
+                                    5000,
+                                );
+                            }
+                        }
+                    }
+                });
+
+                // Initial fetch of CMTS data
+                fetchCmts();
+            });
+</script>
+{{end}}
