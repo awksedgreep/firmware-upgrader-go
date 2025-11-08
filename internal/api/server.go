@@ -82,14 +82,14 @@ func (s *Server) loadTemplates() error {
 		tmpl := template.New(page)
 
 		// Parse base layout first
-		tmpl, err := tmpl.ParseFiles("templates/layouts/base.html")
+		tmpl, err := tmpl.ParseFiles("templates/layouts/base.gohtml")
 		if err != nil {
 			log.Warn().Err(err).Str("page", page).Msg("Failed to parse base layout")
 			continue
 		}
 
 		// Parse the specific page template
-		tmpl, err = tmpl.ParseFiles("templates/" + page + ".html")
+		tmpl, err = tmpl.ParseFiles("templates/" + page + ".gohtml")
 		if err != nil {
 			log.Warn().Err(err).Str("page", page).Msg("Failed to parse page template")
 			continue
