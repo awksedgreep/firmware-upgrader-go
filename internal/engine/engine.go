@@ -295,7 +295,7 @@ func (e *Engine) DiscoverModems(cmtsID int) error {
 
 	// Log activity
 	e.db.LogActivity(&models.ActivityLog{
-		EventType:  models.EventModemDiscovered,
+		EventType:  "modem_discovered",
 		EntityType: "cmts",
 		EntityID:   cmtsID,
 		Message:    fmt.Sprintf("Discovered %d modems on CMTS %s", len(modems), cmts.Name),
@@ -774,7 +774,7 @@ func (e *Engine) runCleanup() {
 		// Log activity
 		if markedOffline > 0 {
 			e.db.LogActivity(&models.ActivityLog{
-				EventType:  models.EventSystemStarted, // Reuse existing event type
+				EventType:  "modem_cleanup",
 				EntityType: "system",
 				EntityID:   0,
 				Message:    fmt.Sprintf("Marked %d stale modems as offline", markedOffline),
@@ -783,7 +783,7 @@ func (e *Engine) runCleanup() {
 
 		if deleted > 0 {
 			e.db.LogActivity(&models.ActivityLog{
-				EventType:  models.EventSystemStarted,
+				EventType:  "modem_cleanup",
 				EntityType: "system",
 				EntityID:   0,
 				Message:    fmt.Sprintf("Deleted %d old offline modems", deleted),
