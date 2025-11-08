@@ -215,6 +215,8 @@ The application uses database-backed settings (no config file needed).
 ./firmware-upgrader [options]
 
 Options:
+  -bind string      Bind address/interface (default: 0.0.0.0)
+                    Examples: 127.0.0.1, 192.168.1.1, 10.0.0.1
   -port int         HTTP server port (default: 8080)
   -workers int      Number of workers (default: 4)
   -loglevel string  Log level: debug, info, warn, error (default: info)
@@ -224,9 +226,34 @@ Options:
 
 ```bash
 # Set via RouterOS (optional)
+export FW_BIND=192.168.88.1  # Bind to internal IP only
 export FW_PORT=8080
 export FW_WORKERS=4
 export FW_LOG_LEVEL=info
+```
+
+### Security: Binding to Specific Interface
+
+**IMPORTANT:** If your MikroTik router has a public IP, bind to an internal interface only:
+
+```bash
+# Bind to internal/management IP (recommended for routers with public IPs)
+./firmware-upgrader -bind 192.168.88.1 -port 8080
+
+# Bind to localhost only (access via SSH tunnel)
+./firmware-upgrader -bind 127.0.0.1 -port 8080
+
+# Bind to all interfaces (default, use only on private networks)
+./firmware-upgrader -bind 0.0.0.0 -port 8080
+```
+
+**Example: Router with Public IP on ether1**
+```bash
+# Get your internal bridge IP
+/ip address print where interface=bridge
+
+# Bind to bridge IP only (not public interface)
+./firmware-upgrader -bind 192.168.88.1 -port 8080 -db /firmware-upgrader/upgrader.db
 ```
 
 ### Firewall Configuration
@@ -252,7 +279,12 @@ Allow access to the web interface:
 ```bash
 # Start in foreground (for testing)
 cd /firmware-upgrader
+
+# Bind to all interfaces (private network only)
 ./firmware-upgrader -port 8080
+
+# Or bind to specific internal IP (recommended for routers with public IPs)
+./firmware-upgrader -bind 192.168.88.1 -port 8080
 ```
 
 Test by accessing: `http://192.168.88.1:8080`
@@ -265,7 +297,7 @@ Press `Ctrl+C` to stop.
 
 ```bash
 /system script add name="firmware-upgrader-start" source={
-  :execute script="/firmware-upgrader/firmware-upgrader -port 8080" file=firmware-upgrader.log
+  :execute script="/firmware-upgrader/firmware-upgrader -bind 192.168.88.1 -port 8080" file=firmware-upgrader.log
 }
 ```
 
@@ -288,7 +320,7 @@ Press `Ctrl+C` to stop.
 
 ```bash
 /system scheduler add name="firmware-upgrader-autostart" \
-  on-event="/firmware-upgrader/firmware-upgrader -port 8080 &" \
+  on-event="/firmware-upgrader/firmware-upgrader -bind 192.168.88.1 -port 8080 &" \
   start-time=startup \
   interval=0 \
   comment="Auto-start Firmware Upgrader"
@@ -813,10 +845,15 @@ Save as `setup-firmware-upgrader.rsc`:
 
 :log info "Starting Firmware Upgrader setup..."
 
+# Get internal bridge IP
+:local bridgeIP [/ip address get [find interface=bridge] address]
+:local bindIP [:pick $bridgeIP 0 [:find $bridgeIP "/"]]
+:log info "Will bind to internal IP: $bindIP"
+
 # Create directory
 /file mkdir firmware-upgrader
 
-# Add firewall rule
+# Add firewall rule (optional if binding to internal IP only)
 /ip firewall filter add chain=input protocol=tcp dst-port=8080 \
   src-address=192.168.88.0/24 action=accept \
   comment="Firmware Upgrader Web UI" place-before=0
