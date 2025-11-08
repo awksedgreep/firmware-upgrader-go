@@ -123,7 +123,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="community_read"
-                                >SNMP Read Community</label
+                                >CMTS Read Community</label
                             >
                             <input
                                 type="text"
@@ -134,14 +134,13 @@
                             />
                         </div>
                         <div class="form-group">
-                            <label for="community_write"
-                                >SNMP Write Community</label
-                            >
+                            <label for="snmp_port">SNMP Port</label>
                             <input
-                                type="text"
-                                id="community_write"
-                                name="community_write"
-                                placeholder="(Optional)"
+                                type="number"
+                                id="snmp_port"
+                                name="snmp_port"
+                                value="161"
+                                required
                             />
                         </div>
                     </div>
@@ -149,23 +148,25 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="cm_community_string"
-                                >Cable Modem Community</label
+                                >Modem Read Community</label
                             >
                             <input
                                 type="text"
                                 id="cm_community_string"
                                 name="cm_community_string"
-                                placeholder="For polling modems directly"
+                                placeholder="For reading from modems"
                                 required
                             />
                         </div>
                         <div class="form-group">
-                            <label for="snmp_port">SNMP Port</label>
+                            <label for="community_write"
+                                >Modem Write Community</label
+                            >
                             <input
-                                type="number"
-                                id="snmp_port"
-                                name="snmp_port"
-                                value="161"
+                                type="text"
+                                id="community_write"
+                                name="community_write"
+                                placeholder="For upgrading modems"
                                 required
                             />
                         </div>
