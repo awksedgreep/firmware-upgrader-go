@@ -146,6 +146,9 @@ func (s *Server) setupRoutes() {
 	s.router.HandleFunc("/edit-cmts", s.handleEditCMTSPage).Methods("GET")
 	s.router.HandleFunc("/edit-rule", s.handleEditRulePage).Methods("GET")
 
+	// Form submission handlers
+	s.router.HandleFunc("/api/cmts/update", s.handleUpdateCMTSForm).Methods("POST")
+
 	// API routes
 	api := s.router.PathPrefix("/api").Subrouter()
 
@@ -239,6 +242,73 @@ func (s *Server) handleEditCMTSPage(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleEditRulePage(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{"Title": "Edit Rule"}
 	s.renderTemplate(w, "edit-rule", data)
+}
+
+// handleUpdateCMTSForm handles form-based CMTS updates
+func (s *Server) handleUpdateCMTSForm(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	cmtsID := r.FormValue("id")
+	if cmtsID == "" {
+		http.Error(w, "Missing CMTS ID", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(cmtsID)
+	if err != nil {
+		http.Error(w, "Invalid CMTS ID", http.StatusBadRequest)
+		return
+	}
+
+	// Parse form values
+	snmpPort := 161
+	if port := r.FormValue("snmp_port"); port != "" {
+		if p, err := strconv.Atoi(port); err == nil {
+			snmpPort = p
+		}
+	}
+
+	snmpVersion := 2
+	if version := r.FormValue("snmp_version"); version != "" {
+		if v, err := strconv.Atoi(version); err == nil {
+			snmpVersion = v
+		}
+	}
+
+	enabled := r.FormValue("enabled") == "true"
+
+	cmts := &models.CMTS{
+		ID:                id,
+		Name:              r.FormValue("name"),
+		IPAddress:         r.FormValue("ip_address"),
+		SNMPPort:          snmpPort,
+		CommunityRead:     r.FormValue("community_read"),
+		CommunityWrite:    r.FormValue("community_write"),
+		CMCommunityString: r.FormValue("cm_community_string"),
+		SNMPVersion:       snmpVersion,
+		Enabled:           enabled,
+	}
+
+	// Update the CMTS
+	if err := s.db.UpdateCMTS(cmts); err != nil {
+		log.Error().Err(err).Int("cmts_id", id).Msg("Failed to update CMTS")
+		http.Error(w, "Failed to update CMTS", http.StatusInternalServerError)
+		return
+	}
+
+	// Log activity
+	s.db.LogActivity(&models.ActivityLog{
+		EventType:  models.EventCMTSUpdated,
+		EntityType: "cmts",
+		EntityID:   id,
+		Message:    fmt.Sprintf("Updated CMTS: %s", cmts.Name),
+	})
+
+	// Redirect back to CMTS list
+	http.Redirect(w, r, "/cmts", http.StatusSeeOther)
 }
 
 // Middleware

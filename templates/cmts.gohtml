@@ -72,6 +72,16 @@
                 font-size: 2.5em;
                 margin-bottom: var(--spacing-md);
             }
+
+            .error-state {
+                text-align: center;
+                padding: var(--spacing-xl);
+                color: #ef4444;
+                background-color: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: var(--radius-md);
+                font-weight: 500;
+            }
 </style>
 
 <!-- Page Header -->
@@ -283,17 +293,30 @@
                 // Function to fetch and display CMTS list
                 const fetchCmts = async () => {
                     try {
+                        console.log("Fetching CMTS list from API...");
                         const cmtsList = await apiGet("/api/cmts");
+                        console.log("Raw API response:", cmtsList);
+                        console.log("Response type:", typeof cmtsList);
+                        console.log("Is array:", Array.isArray(cmtsList));
 
                         cmtsTableBody.innerHTML = "";
 
                         if (!cmtsList || cmtsList.length === 0) {
+                            console.log("No CMTS data found");
                             cmtsTableBody.innerHTML =
                                 '<tr><td colspan="6" class="empty-state">No CMTS devices found. Add one using the form above.</td></tr>';
                             return;
                         }
 
-                        cmtsList.forEach((cmts) => {
+                        console.log(`Processing ${cmtsList.length} CMTS entries`);
+                        cmtsList.forEach((cmts, index) => {
+                            console.log(`Processing CMTS ${index}:`, cmts);
+                            // Skip if cmts data is invalid
+                            if (!cmts || !cmts.id) {
+                                console.warn('Invalid CMTS data at index', index, ':', cmts);
+                                return;
+                            }
+
                             const row = document.createElement("tr");
                             const statusClass = cmts.enabled
                                 ? "status-badge enabled"
@@ -302,31 +325,48 @@
                                 ? "Enabled"
                                 : "Disabled";
 
+                            // Safely escape values
+                            const safeId = String(cmts.id || '');
+                            const safeName = String(cmts.name || 'Unknown');
+                            const safeIP = String(cmts.ip_address || 'Unknown');
+                            const safePort = String(cmts.snmp_port || '161');
+
+                            console.log(`Creating row for CMTS ID ${safeId}:`, {safeId, safeName, safeIP, safePort});
+
                             row.innerHTML = `
-                            <td>${cmts.id}</td>
-                            <td>${cmts.name}</td>
-                            <td>${cmts.ip_address}</td>
-                            <td>${cmts.snmp_port}</td>
+                            <td>${safeId}</td>
+                            <td>${safeName}</td>
+                            <td>${safeIP}</td>
+                            <td>${safePort}</td>
                             <td><span class="${statusClass}">${statusText}</span></td>
                             <td>
                                 <div class="action-links">
-                                    <a href="/edit-cmts?id=${cmts.id}">Edit</a>
-                                    <a href="#" class="delete-link" data-id="${cmts.id}">Delete</a>
+                                    <a href="/edit-cmts?id=${safeId}">Edit</a>
+                                    <a href="#" class="delete-link" data-id="${safeId}">Delete</a>
                                 </div>
                             </td>
                         `;
                             cmtsTableBody.appendChild(row);
+                            console.log(`Successfully added row for CMTS ID ${safeId}`);
                         });
                     } catch (error) {
                         console.error("Failed to fetch CMTS list:", error);
                         cmtsTableBody.innerHTML =
-                            '<tr><td colspan="6" style="color: red; text-align: center;">Error loading CMTS devices. Is the server running?</td></tr>';
+                            '<tr><td colspan="6" class="error-state">Failed to load CMTS devices: ' + (error.message || 'Unknown error') + '. Please refresh the page.</td></tr>';
                     }
                 };
 
                 // Event listener for form submission
                 addCmtsForm.addEventListener("submit", async (event) => {
                     event.preventDefault();
+
+                    // Prevent double submission
+                    const submitButton = addCmtsForm.querySelector('button[type="submit"]');
+                    if (submitButton.disabled) {
+                        return;
+                    }
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Adding...';
 
                     const formData = new FormData(addCmtsForm);
                     const data = {
@@ -356,12 +396,17 @@
                         addCmtsForm.reset();
                         fetchCmts();
                     } catch (error) {
+                        console.error("Failed to create CMTS:", error);
                         showMessage(
-                            `Error: ${error.message}`,
+                            `Failed to create CMTS: ${error.message}`,
                             "error",
                             formMessage,
                             5000,
                         );
+                    } finally {
+                        // Re-enable form submission
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Add CMTS';
                     }
                 });
 
@@ -404,4 +449,6 @@
                 fetchCmts();
             });
 </script>
+
+<script src="/shared.js"></script>
 {{end}}
