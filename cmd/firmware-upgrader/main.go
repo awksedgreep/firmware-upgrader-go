@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/awksedgreep/firmware-upgrader/internal/api"
 	"github.com/awksedgreep/firmware-upgrader/internal/database"
 	"github.com/awksedgreep/firmware-upgrader/internal/engine"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -26,6 +26,7 @@ func main() {
 	// Command line flags
 	var (
 		dbPath   = flag.String("db", "upgrader.db", "Path to SQLite database")
+		bind     = flag.String("bind", "0.0.0.0", "Bind address/interface (e.g., 127.0.0.1, 192.168.1.1, or 0.0.0.0)")
 		port     = flag.Int("port", 8080, "HTTP server port")
 		logLevel = flag.String("log-level", "info", "Log level (debug, info, warn, error)")
 		workers  = flag.Int("workers", 0, "Number of concurrent upgrade workers (0 = use database setting)")
@@ -44,6 +45,7 @@ func main() {
 	log.Info().
 		Str("version", version).
 		Str("db_path", *dbPath).
+		Str("bind", *bind).
 		Int("port", *port).
 		Msg("Starting Firmware Upgrader")
 
@@ -122,13 +124,14 @@ func main() {
 
 	// Initialize API server
 	srv := api.NewServer(db, eng, api.Config{
+		Bind:    *bind,
 		Port:    *port,
 		WebRoot: "./web",
 	})
 
 	// Start server in background
 	go func() {
-		log.Info().Int("port", *port).Msgf("HTTP server listening on http://0.0.0.0:%d", *port)
+		log.Info().Str("bind", *bind).Int("port", *port).Msgf("HTTP server listening on http://%s:%d", *bind, *port)
 		if err := srv.Start(); err != nil {
 			log.Error().Err(err).Msg("HTTP server error")
 		}

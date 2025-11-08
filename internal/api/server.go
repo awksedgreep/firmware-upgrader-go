@@ -17,6 +17,7 @@ import (
 
 // Config holds API server configuration
 type Config struct {
+	Bind    string
 	Port    int
 	WebRoot string
 }
@@ -42,7 +43,7 @@ func NewServer(db *database.DB, eng *engine.Engine, config Config) *Server {
 	s.setupRoutes()
 
 	s.server = &http.Server{
-		Addr:         fmt.Sprintf(":%d", config.Port),
+		Addr:         fmt.Sprintf("%s:%d", config.Bind, config.Port),
 		Handler:      s.router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
