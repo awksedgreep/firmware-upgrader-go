@@ -21,6 +21,16 @@ func New(dbPath string) (*DB, error) {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
+	// Enable WAL mode for better concurrency
+	if _, err := conn.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		return nil, fmt.Errorf("failed to enable WAL mode: %w", err)
+	}
+
+	// Increase busy timeout to handle concurrent writes
+	if _, err := conn.Exec("PRAGMA busy_timeout=5000"); err != nil {
+		return nil, fmt.Errorf("failed to set busy timeout: %w", err)
+	}
+
 	// Set connection pool settings
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(5)
@@ -406,30 +416,47 @@ func (db *DB) CleanupStaleModems(offlineThresholdMinutes int, deleteThresholdDay
 	offlineThreshold := now - int64(offlineThresholdMinutes*60)
 	deleteThreshold := now - int64(deleteThresholdDays*24*60*60)
 
-	// Mark modems as offline if not seen in X minutes
-	result, err := db.conn.Exec(`
-		UPDATE cable_modem
-		SET status = 'offline'
-		WHERE last_seen < ?
-		AND status != 'offline'`,
-		offlineThreshold)
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to mark stale modems offline: %w", err)
+	var markedOffline, deleted int64
+	var err error
+
+	// Retry up to 3 times with backoff for database locked errors
+	for attempt := 0; attempt < 3; attempt++ {
+		if attempt > 0 {
+			time.Sleep(time.Millisecond * time.Duration(100*attempt))
+		}
+
+		// Mark modems as offline if not seen in X minutes
+		result, err := db.conn.Exec(`
+			UPDATE cable_modem
+			SET status = 'offline'
+			WHERE last_seen < ?
+			AND status != 'offline'`,
+			offlineThreshold)
+		if err != nil {
+			if attempt < 2 {
+				continue
+			}
+			return 0, 0, fmt.Errorf("failed to mark stale modems offline: %w", err)
+		}
+
+		markedOffline, _ = result.RowsAffected()
+
+		// Delete modems that have been offline for Y days
+		result, err = db.conn.Exec(`
+			DELETE FROM cable_modem
+			WHERE last_seen < ?
+			AND status = 'offline'`,
+			deleteThreshold)
+		if err != nil {
+			if attempt < 2 {
+				continue
+			}
+			return int(markedOffline), 0, fmt.Errorf("failed to delete old modems: %w", err)
+		}
+
+		deleted, _ = result.RowsAffected()
+		break
 	}
-
-	markedOffline, _ := result.RowsAffected()
-
-	// Delete modems that have been offline for Y days
-	result, err = db.conn.Exec(`
-		DELETE FROM cable_modem
-		WHERE last_seen < ?
-		AND status = 'offline'`,
-		deleteThreshold)
-	if err != nil {
-		return int(markedOffline), 0, fmt.Errorf("failed to delete old modems: %w", err)
-	}
-
-	deleted, _ := result.RowsAffected()
 
 	return int(markedOffline), int(deleted), nil
 }
