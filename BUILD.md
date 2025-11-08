@@ -166,18 +166,7 @@ The version is displayed in:
 - `--version` flag (if implemented)
 - Health check endpoint (`/health`)
 
-## Docker Builds
 
-```bash
-# Standard Docker image
-make docker
-
-# Minimal Alpine-based image
-make docker-minimal
-
-# Tiny scratch-based image (smallest)
-docker build -f Dockerfile.tiny -t firmware-upgrader:tiny .
-```
 
 ## Deployment
 
@@ -310,35 +299,7 @@ make tidy
 make test
 ```
 
-## CI/CD Integration
 
-Example GitHub Actions workflow:
-
-```yaml
-name: Build
-on: [push, pull_request]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-        with:
-          go-version: '1.24'
-      
-      - name: Install UPX
-        run: sudo apt-get install -y upx-ucl
-      
-      - name: Build
-        run: make all
-      
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: binaries
-          path: build/*
-```
 
 ## Further Optimization
 
