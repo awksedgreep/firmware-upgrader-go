@@ -291,7 +291,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 err.error || "Failed to save changes",
                             );
                         }
-                        window.location.href = "/rules.html";
+                        window.location.href = "/rules";
                     } catch (error) {
                         showMessage(`Error: ${error.message}`, false);
                     }
@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 );
                                 if (!response.ok)
                                     throw new Error("Failed to delete rule");
-                                window.location.href = "/rules.html";
+                                window.location.href = "/rules";
                             } catch (error) {
                                 showMessage(`Error: ${error.message}`, false);
                             }

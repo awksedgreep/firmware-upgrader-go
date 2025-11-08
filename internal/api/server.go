@@ -137,14 +137,14 @@ func (s *Server) setupRoutes() {
 
 	// UI Pages (server-side rendered)
 	s.router.HandleFunc("/", s.handleIndexPage).Methods("GET")
-	s.router.HandleFunc("/cmts.html", s.handleCMTSPage).Methods("GET")
-	s.router.HandleFunc("/rules.html", s.handleRulesPage).Methods("GET")
-	s.router.HandleFunc("/activity.html", s.handleActivityPage).Methods("GET")
-	s.router.HandleFunc("/settings.html", s.handleSettingsPage).Methods("GET")
-	s.router.HandleFunc("/docs.html", s.handleDocsPage).Methods("GET")
-	s.router.HandleFunc("/api.html", s.handleAPIPage).Methods("GET")
-	s.router.HandleFunc("/edit-cmts.html", s.handleEditCMTSPage).Methods("GET")
-	s.router.HandleFunc("/edit-rule.html", s.handleEditRulePage).Methods("GET")
+	s.router.HandleFunc("/cmts", s.handleCMTSPage).Methods("GET")
+	s.router.HandleFunc("/rules", s.handleRulesPage).Methods("GET")
+	s.router.HandleFunc("/activity", s.handleActivityPage).Methods("GET")
+	s.router.HandleFunc("/settings", s.handleSettingsPage).Methods("GET")
+	s.router.HandleFunc("/docs", s.handleDocsPage).Methods("GET")
+	s.router.HandleFunc("/api-docs", s.handleAPIPage).Methods("GET")
+	s.router.HandleFunc("/edit-cmts", s.handleEditCMTSPage).Methods("GET")
+	s.router.HandleFunc("/edit-rule", s.handleEditRulePage).Methods("GET")
 
 	// API routes
 	api := s.router.PathPrefix("/api").Subrouter()

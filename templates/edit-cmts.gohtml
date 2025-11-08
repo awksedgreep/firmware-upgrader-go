@@ -253,7 +253,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         }
                         showMessage("CMTS updated successfully!", true);
                         setTimeout(
-                            () => (window.location.href = "/cmts.html"),
+                            () => (window.location.href = "/cmts"),
                             1500,
                         );
                     } catch (error) {
@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 );
                             }
                             alert("CMTS deleted successfully.");
-                            window.location.href = "/cmts.html";
+                            window.location.href = "/cmts";
                         } catch (error) {
                             showMessage(`Error: ${error.message}`, false);
                         }

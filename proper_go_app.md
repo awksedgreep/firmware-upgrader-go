@@ -17,7 +17,7 @@
 ## Phase 1: Create Template Structure ✅ COMPLETE (15 min)
 
 ### 1.1 Create Base Layout Template
-**File**: `templates/layouts/base.html`
+**File**: `templates/layouts/base.gohtml`
 - Define `<!DOCTYPE html>`, `<head>`, shared CSS
 - Define header with navigation (ONE place)
 - Define footer (ONE place)
@@ -25,13 +25,13 @@
 
 ### 1.2 Create Page Templates
 Convert existing HTML to templates:
-- `templates/index.html` - Dashboard
-- `templates/cmts.html` - CMTS list
-- `templates/rules.html` - Rules list
-- `templates/activity.html` - Activity log
-- `templates/settings.html` - Settings
-- `templates/docs.html` - Documentation
-- `templates/api.html` - API reference
+- `templates/index.gohtml` - Dashboard
+- `templates/cmts.gohtml` - CMTS list
+- `templates/rules.gohtml` - Rules list
+- `templates/activity.gohtml` - Activity log
+- `templates/settings.gohtml` - Settings
+- `templates/docs.gohtml` - Documentation
+- `templates/api.gohtml` - API reference
 
 Each template:
 1. Define `{{define "content"}}`
@@ -63,11 +63,11 @@ func (s *Server) loadTemplates() error {
 Replace static file serving with template handlers:
 ```go
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-    s.templates.ExecuteTemplate(w, "index.html", nil)
+    s.templates.ExecuteTemplate(w, "index.gohtml", nil)
 }
 
 func (s *Server) handleCMTS(w http.ResponseWriter, r *http.Request) {
-    s.templates.ExecuteTemplate(w, "cmts.html", nil)
+    s.templates.ExecuteTemplate(w, "cmts.gohtml", nil)
 }
 // ... etc for each page
 ```
@@ -83,6 +83,10 @@ s.router.HandleFunc("/activity.html", s.handleActivity)
 s.router.HandleFunc("/settings.html", s.handleSettings)
 s.router.HandleFunc("/docs.html", s.handleDocs)
 s.router.HandleFunc("/api.html", s.handleAPIReference)
+
+// Note: URLs still use .html for backward compatibility,
+// but templates use .gohtml extension
+```
 
 // Static assets (CSS, JS)
 s.router.PathPrefix("/").Handler(http.FileServer(http.Dir("./web")))
@@ -215,12 +219,15 @@ git checkout HEAD~1  # Go back to static HTML version
 - `88a40cc` - Phase 1&2 complete: Refactor to Go templates with server-side rendering
 - `d394faf` - Phase 3 complete: Remove old static HTML files
 - `7611f1f` - Phase 5 complete: Update documentation for template refactoring
-- Merge commit - "Merge refactor-templates: Complete migration to Go templates"
+- `649995e` - Merge commit: "Merge refactor-templates: Complete migration to Go templates"
+- `c1ff883` - Mark template refactoring as fully complete
+- `037127f` - Rename template files from .html to .gohtml
 
 ## Completed Tasks ✅
 - ✅ Updated CONTEXT.md to reflect new architecture
 - ✅ Merged `refactor-templates` branch to `main`
 - ✅ Updated proper_go_app.md with implementation status
+- ✅ Renamed templates to use .gohtml extension (proper Go convention)
 - ✅ Ready for version tag (v0.4.0 suggested)
 
 ## Results
