@@ -299,7 +299,164 @@
             }
 </style>
 
+<div class="settings-container">
+                <div class="settings-header">
+                    <h1>⚙️ Settings</h1>
+                    <p>Configure system behavior and performance parameters</p>
+                </div>
 
+                <div id="alert-container"></div>
+
+                <div class="settings-grid">
+                    <!-- Worker Configuration -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <span class="card-icon">⚡</span>
+                            <div class="card-title">
+                                <h2>Performance</h2>
+                                <p>Control concurrent upgrade operations</p>
+                            </div>
+                        </div>
+
+                        <form class="settings-form" id="performance-form">
+                            <div class="form-group">
+                                <label>
+                                    Concurrent Workers
+                                    <span class="label-badge">CORE</span>
+                                </label>
+                                <div class="help-text">
+                                    Number of simultaneous upgrade jobs. Higher values increase throughput but use more resources.
+                                </div>
+                                <div class="input-range-wrapper">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span class="current-value" id="workers-value">5</span>
+                                        <input type="range" id="workers" name="workers" min="1" max="20" value="5" />
+                                    </div>
+                                    <div class="range-labels">
+                                        <span>1 (Conservative)</span>
+                                        <span>20 (Aggressive)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    Max Upgrades per CMTS
+                                    <span class="label-badge">LIMIT</span>
+                                </label>
+                                <div class="help-text">
+                                    Maximum simultaneous upgrades on a single CMTS to prevent overload.
+                                </div>
+                                <div class="input-range-wrapper">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span class="current-value" id="max-per-cmts-value">10</span>
+                                        <input type="range" id="max_upgrades_per_cmts" name="max_upgrades_per_cmts" min="1" max="50" value="10" />
+                                    </div>
+                                    <div class="range-labels">
+                                        <span>1</span>
+                                        <span>50</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-secondary" onclick="loadSettings()">Reset</button>
+                                <button type="submit" class="btn btn-primary">Save Performance Settings</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Timing Configuration -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <span class="card-icon">⏱️</span>
+                            <div class="card-title">
+                                <h2>Timing & Intervals</h2>
+                                <p>Configure discovery and timeout settings</p>
+                            </div>
+                        </div>
+
+                        <form class="settings-form" id="timing-form">
+                            <div class="form-group">
+                                <label>Discovery Interval</label>
+                                <div class="help-text">
+                                    How often to poll CMTS for modem discovery (in seconds).
+                                </div>
+                                <div class="input-group">
+                                    <input type="number" id="discovery_interval" name="discovery_interval"
+                                           value="60" min="30" max="3600" />
+                                    <span class="unit">seconds</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Job Timeout</label>
+                                <div class="help-text">
+                                    Maximum time to wait for an upgrade to complete before marking as failed.
+                                </div>
+                                <div class="input-group">
+                                    <input type="number" id="job_timeout" name="job_timeout"
+                                           value="300" min="60" max="1800" />
+                                    <span class="unit">seconds</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Retry Attempts</label>
+                                <div class="help-text">
+                                    Number of times to retry a failed upgrade before giving up.
+                                </div>
+                                <div class="input-group">
+                                    <input type="number" id="retry_attempts" name="retry_attempts"
+                                           value="3" min="0" max="10" />
+                                    <span class="unit">attempts</span>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-secondary" onclick="loadSettings()">Reset</button>
+                                <button type="submit" class="btn btn-primary">Save Timing Settings</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- System Info -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <span class="card-icon">📊</span>
+                            <div class="card-title">
+                                <h2>System Information</h2>
+                                <p>Current system status and metrics</p>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value" id="stat-version">-</div>
+                                <div class="stat-label">Version</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="stat-uptime">-</div>
+                                <div class="stat-label">Uptime</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="stat-jobs">-</div>
+                                <div class="stat-label">Active Jobs</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="stat-cmts">-</div>
+                                <div class="stat-label">CMTS Online</div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-secondary" onclick="location.reload()">
+                                🔄 Refresh Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 <script>
 let originalSettings = {};
