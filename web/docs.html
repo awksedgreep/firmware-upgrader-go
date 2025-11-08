@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Documentation - Firmware Upgrader</title>
+        <link rel="stylesheet" href="/shared.css" />
+        <style>
+            .docs-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: var(--spacing-xl);
+            }
+
+            .docs-nav {
+                position: sticky;
+                top: 80px;
+                background: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-lg);
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .docs-nav h3 {
+                margin-top: 0;
+                margin-bottom: var(--spacing-md);
+                color: var(--primary-color);
+            }
+
+            .docs-nav ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .docs-nav li {
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .docs-nav a {
+                color: var(--text-secondary);
+                text-decoration: none;
+                padding: var(--spacing-xs) var(--spacing-sm);
+                display: block;
+                border-radius: var(--radius-md);
+                transition: all 0.2s ease;
+            }
+
+            .docs-nav a:hover,
+            .docs-nav a.active {
+                background: var(--primary-color);
+                color: white;
+            }
+
+            .docs-content {
+                background: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-xl);
+            }
+
+            .docs-section {
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .docs-section h2 {
+                color: var(--primary-color);
+                margin-bottom: var(--spacing-lg);
+                padding-bottom: var(--spacing-md);
+                border-bottom: 2px solid var(--border-color);
+            }
+
+            .docs-section h3 {
+                margin-top: var(--spacing-lg);
+                margin-bottom: var(--spacing-md);
+            }
+
+            .docs-section p {
+                line-height: 1.6;
+                margin-bottom: var(--spacing-md);
+            }
+
+            .docs-section ul,
+            .docs-section ol {
+                margin-bottom: var(--spacing-md);
+                padding-left: var(--spacing-xl);
+            }
+
+            .docs-section li {
+                margin-bottom: var(--spacing-sm);
+                line-height: 1.6;
+            }
+
+            .code-block {
+                background: #1e1e1e;
+                color: #d4d4d4;
+                padding: var(--spacing-lg);
+                border-radius: var(--radius-md);
+                margin: var(--spacing-md) 0;
+                overflow-x: auto;
+                font-family: 'Courier New', monospace;
+                font-size: 0.9em;
+                line-height: 1.5;
+            }
+
+            .info-box {
+                background: #e3f2fd;
+                border-left: 4px solid #2196f3;
+                padding: var(--spacing-md);
+                margin: var(--spacing-md) 0;
+                border-radius: var(--radius-md);
+            }
+
+            .warning-box {
+                background: #fff3e0;
+                border-left: 4px solid #ff9800;
+                padding: var(--spacing-md);
+                margin: var(--spacing-md) 0;
+                border-radius: var(--radius-md);
+            }
+
+            .success-box {
+                background: #e8f5e9;
+                border-left: 4px solid #4caf50;
+                padding: var(--spacing-md);
+                margin: var(--spacing-md) 0;
+                border-radius: var(--radius-md);
+            }
+
+            .feature-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: var(--spacing-lg);
+                margin: var(--spacing-lg) 0;
+            }
+
+            .feature-card {
+                background: var(--background);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                padding: var(--spacing-lg);
+            }
+
+            .feature-card h4 {
+                color: var(--primary-color);
+                margin-top: 0;
+                margin-bottom: var(--spacing-sm);
+            }
+
+            .step-number {
+                display: inline-block;
+                background: var(--primary-color);
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                text-align: center;
+                line-height: 32px;
+                font-weight: bold;
+                margin-right: var(--spacing-sm);
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🔄</span>
+                    <span class="logo-text">Firmware Upgrader</span>
+                </div>
+                <nav>
+                    <a href="/">Dashboard</a>
+                    <a href="/cmts.html">CMTS</a>
+                    <a href="/rules.html">Rules</a>
+                    <a href="/activity.html">Activity</a>
+                    <a href="/settings.html">Settings</a>
+                    <a href="/docs.html" class="active">Docs</a>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <div class="docs-container">
+                <div class="docs-nav">
+                    <h3>Quick Navigation</h3>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#getting-started">Getting Started</a></li>
+                        <li><a href="#cmts-setup">CMTS Setup</a></li>
+                        <li><a href="#rules">Upgrade Rules</a></li>
+                        <li><a href="#monitoring">Monitoring</a></li>
+                        <li><a href="#troubleshooting">Troubleshooting</a></li>
+                        <li><a href="#deployment">Deployment</a></li>
+                    </ul>
+                </div>
+
+                <div class="docs-content">
+                    <!-- Overview -->
+                    <div class="docs-section" id="overview">
+                        <h2>📖 Overview</h2>
+                        <p>
+                            The Firmware Upgrader is a powerful, automated system for managing
+                            cable modem firmware upgrades across DOCSIS networks. It provides
+                            centralized control, intelligent scheduling, and comprehensive monitoring
+                            for large-scale firmware deployments.
+                        </p>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <h4>🎯 Automated Upgrades</h4>
+                                <p>Rule-based upgrades with smart scheduling and rollback protection</p>
+                            </div>
+                            <div class="feature-card">
+                                <h4>📊 Real-time Monitoring</h4>
+                                <p>Track upgrade progress, success rates, and modem status live</p>
+                            </div>
+                            <div class="feature-card">
+                                <h4>🔍 SNMP Discovery</h4>
+                                <p>Automatic modem discovery via CMTS SNMP polling</p>
+                            </div>
+                            <div class="feature-card">
+                                <h4>⚡ High Performance</h4>
+                                <p>Concurrent workers, efficient database, minimal resource usage</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Getting Started -->
+                    <div class="docs-section" id="getting-started">
+                        <h2>🚀 Getting Started</h2>
+
+                        <h3><span class="step-number">1</span> Add Your First CMTS</h3>
+                        <p>Navigate to <a href="/cmts.html">CMTS Management</a> and add your CMTS device:</p>
+                        <ul>
+                            <li><strong>Name:</strong> Friendly name for the CMTS</li>
+                            <li><strong>IP Address:</strong> Management IP of the CMTS</li>
+                            <li><strong>SNMP Community:</strong> Read community string (default: public)</li>
+                            <li><strong>TFTP Server:</strong> IP address of your TFTP server</li>
+                        </ul>
+
+                        <div class="info-box">
+                            <strong></strong>💡 Tip:</strong> Test the CMTS connection after adding it to ensure
+                            SNMP is accessible and responding correctly.
+                        </div>
+
+                        <h3><span class="step-number">2</span> Create an Upgrade Rule</h3>
+                        <p>Go to <a href="/rules.html">Rules Management</a> and create your first rule:</p>
+                        <ul>
+                            <li>Set source firmware version(s) to match</li>
+                            <li>Specify target firmware version</li>
+                            <li>Choose which CMTS to apply the rule to</li>
+                            <li>Enable the rule when ready</li>
+                        </ul>
+
+                        <h3><span class="step-number">3</span> Monitor Progress</h3>
+                        <p>
+                            The system will automatically discover matching modems and create upgrade jobs.
+                            Watch progress on the <a href="/">Dashboard</a> or <a href="/activity.html">Activity Log</a>.
+                        </p>
+                    </div>
+
+                    <!-- CMTS Setup -->
+                    <div class="docs-section" id="cmts-setup">
+                        <h2>🌐 CMTS Setup</h2>
+
+                        <h3>Prerequisites</h3>
+                        <ul>
+                            <li>CMTS must be accessible via network</li>
+                            <li>SNMP v2c enabled on CMTS</li>
+                            <li>Read community string configured</li>
+                            <li>TFTP server accessible from modems</li>
+                        </ul>
+
+                        <h3>Testing SNMP Connectivity</h3>
+                        <p>From the router/server running Firmware Upgrader:</p>
+                        <div class="code-block">snmpwalk -v2c -c public 192.168.1.1 1.3.6.1.2.1.1.1.0</div>
+                        <p>You should see the CMTS system description.</p>
+
+                        <h3>TFTP Server Configuration</h3>
+                        <div class="warning-box">
+                            <strong>⚠️ Important:</strong> The TFTP server IP must be reachable from
+                            cable modems. Typically this is on the same network as the CMTS.
+                        </div>
+                        <ul>
+                            <li>Place firmware files in TFTP root directory</li>
+                            <li>Use simple filenames without spaces</li>
+                            <li>Ensure TFTP service is running and accessible</li>
+                            <li>Test with a manual modem upgrade first</li>
+                        </ul>
+                    </div>
+
+                    <!-- Rules -->
+                    <div class="docs-section" id="rules">
+                        <h2>📋 Upgrade Rules</h2>
+
+                        <h3>How Rules Work</h3>
+                        <p>
+                            Rules define which modems should be upgraded and to which firmware version.
+                            The system evaluates rules every 2 minutes and creates jobs for matching modems.
+                        </p>
+
+                        <h3>Rule Configuration</h3>
+                        <ul>
+                            <li><strong>Name:</strong> Descriptive name for the rule</li>
+                            <li><strong>Source Versions:</strong> Current firmware version(s) to match (comma-separated)</li>
+                            <li><strong>Target Version:</strong> Firmware version to upgrade to</li>
+                            <li><strong>Target Filename:</strong> Filename on TFTP server</li>
+                            <li><strong>CMTS Selection:</strong> Which CMTS devices this rule applies to</li>
+                            <li><strong>Priority:</strong> Higher priority rules are processed first</li>
+                        </ul>
+
+                        <h3>Rule Matching</h3>
+                        <p>A modem matches a rule if:</p>
+                        <ol>
+                            <li>The rule is enabled</li>
+                            <li>Modem's current firmware is in the source versions list</li>
+                            <li>Modem is on a selected CMTS</li>
+                            <li>No pending or active upgrade job exists for that modem</li>
+                        </ol>
+
+                        <div class="success-box">
+                            <strong>✅ Best Practice:</strong> Start with a small test rule (specific
+                            MAC addresses or single CMTS) before enabling network-wide upgrades.
+                        </div>
+
+                        <h3>Example Rules</h3>
+                        <div class="code-block">
+Rule 1: SB6190 Emergency Patch
+  Source: 9.1.93A, 9.1.93B
+  Target: 9.1.103D
+  CMTS: All
+  Priority: 100
+
+Rule 2: General Upgrade to Latest
+  Source: 2.4.0.1, 2.4.0.2
+  Target: 2.5.0.1
+  CMTS: CMTS-01, CMTS-02
+  Priority: 50
+                        </div>
+                    </div>
+
+                    <!-- Monitoring -->
+                    <div class="docs-section" id="monitoring">
+                        <h2>📊 Monitoring & Logs</h2>
+
+                        <h3>Dashboard</h3>
+                        <p>The main dashboard provides real-time overview:</p>
+                        <ul>
+                            <li>Total CMTS devices and online status</li>
+                            <li>Modem counts and firmware distribution</li>
+                            <li>Active and enabled rules</li>
+                            <li>Upgrade job statistics and success rates</li>
+                            <li>Recent activity timeline</li>
+                        </ul>
+
+                        <h3>Activity Log</h3>
+                        <p>
+                            View detailed activity log at <a href="/activity.html">Activity Log</a>.
+                            All system actions are logged including:
+                        </p>
+                        <ul>
+                            <li>CMTS discovery cycles</li>
+                            <li>Rule evaluations and job creation</li>
+                            <li>Upgrade job status changes</li>
+                            <li>Success and failure events</li>
+                            <li>Configuration changes</li>
+                        </ul>
+
+                        <h3>Job Status</h3>
+                        <p>Upgrade jobs progress through these states:</p>
+                        <ul>
+                            <li><strong>Pending:</strong> Job created, waiting for worker</li>
+                            <li><strong>In Progress:</strong> SNMP upgrade command sent to modem</li>
+                            <li><strong>Verifying:</strong> Checking if modem upgraded successfully</li>
+                            <li><strong>Completed:</strong> Upgrade verified successful</li>
+                            <li><strong>Failed:</strong> Upgrade failed (with retry if configured)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Troubleshooting -->
+                    <div class="docs-section" id="troubleshooting">
+                        <h2>🔧 Troubleshooting</h2>
+
+                        <h3>Modems Not Discovered</h3>
+                        <ul>
+                            <li>Verify CMTS IP and SNMP community string are correct</li>
+                            <li>Check network connectivity to CMTS</li>
+                            <li>Ensure SNMP is enabled on CMTS</li>
+                            <li>Check activity log for SNMP errors</li>
+                        </ul>
+
+                        <h3>Upgrades Failing</h3>
+                        <ul>
+                            <li>Verify TFTP server is accessible from modems</li>
+                            <li>Check firmware filename matches file on TFTP server</li>
+                            <li>Ensure modem is online and responding</li>
+                            <li>Check if modem supports the target firmware version</li>
+                            <li>Review activity log for specific error messages</li>
+                        </ul>
+
+                        <h3>Rules Not Creating Jobs</h3>
+                        <ul>
+                            <li>Ensure rule is enabled</li>
+                            <li>Check source version exactly matches modem firmware</li>
+                            <li>Verify CMTS is selected in rule configuration</li>
+                            <li>Look for existing jobs for the same modem</li>
+                        </ul>
+
+                        <h3>High Memory/CPU Usage</h3>
+                        <ul>
+                            <li>Reduce number of concurrent workers in settings</li>
+                            <li>Increase discovery interval</li>
+                            <li>Lower max upgrades per CMTS</li>
+                            <li>Archive old activity logs</li>
+                        </ul>
+
+                        <div class="info-box">
+                            <strong>💡 Tip:</strong> Enable debug logging in Settings for detailed
+                            diagnostic information. Remember to disable it after troubleshooting.
+                        </div>
+                    </div>
+
+                    <!-- Deployment -->
+                    <div class="docs-section" id="deployment">
+                        <h2>🚀 Deployment Options</h2>
+
+                        <h3>MikroTik Router (Container)</h3>
+                        <p>Deploy as a container on RouterOS 7.4+:</p>
+                        <div class="code-block">
+# Enable containers
+/system device-mode update container=yes
+
+# Configure container
+/container envs add name=fw-env key=BIND_ADDRESS value="192.168.88.1"
+/container envs add name=fw-env key=PORT value="8080"
+/container envs add name=fw-env key=DB_PATH value="/app/data/upgrader.db"
+
+# Pull and start
+/container add remote-image=ghcr.io/awksedgreep/firmware-upgrader:latest \
+  interface=veth-fw envlist=fw-env mounts=fw-data
+                        </div>
+
+                        <h3>Linux Server</h3>
+                        <p>Run with Podman or Docker:</p>
+                        <div class="code-block">
+podman run -d \
+  -p 8080:8080 \
+  -v /data/fw-upgrader:/app/data:z \
+  -e BIND_ADDRESS=0.0.0.0 \
+  -e DB_PATH=/app/data/upgrader.db \
+  ghcr.io/awksedgreep/firmware-upgrader:latest
+                        </div>
+
+                        <h3>Environment Variables</h3>
+                        <ul>
+                            <li><strong>BIND_ADDRESS:</strong> Bind to specific IP (default: 0.0.0.0)</li>
+                            <li><strong>PORT:</strong> HTTP port (default: 8080)</li>
+                            <li><strong>DB_PATH:</strong> Database file path</li>
+                            <li><strong>LOG_LEVEL:</strong> debug, info, warn, error (default: info)</li>
+                            <li><strong>WORKERS:</strong> Concurrent upgrade workers (default: 5)</li>
+                        </ul>
+
+                        <div class="warning-box">
+                            <strong>⚠️ Security:</strong> If deploying on a router with public IP,
+                            bind to internal interface only (e.g., BIND_ADDRESS=192.168.88.1) or use
+                            firewall rules to restrict access.
+                        </div>
+
+                        <h3>Database Backup</h3>
+                        <p>The SQLite database is a single file. Back it up regularly:</p>
+                        <div class="code-block">
+# Stop the service first, then:
+cp /app/data/upgrader.db /backups/upgrader-$(date +%Y%m%d).db
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/cmts.html">CMTS Management</a></li>
+                        <li><a href="/rules.html">Rules Management</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="/docs.html">Documentation</a></li>
+                        <li><a href="/api.html">API Reference</a></li>
+                        <li><a href="/settings.html">Settings</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>System</h3>
+                    <ul>
+                        <li><a href="/activity.html">Activity Log</a></li>
+                        <li><a href="/settings.html">Settings</a></li>
+                        <li><a href="/">Dashboard</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Firmware Upgrader. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <script src="/shared.js"></script>
+        <script>
+            // Smooth scroll to anchors
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                        // Update active nav item
+                        document.querySelectorAll('.docs-nav a').forEach(a => a.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Highlight current section in nav on scroll
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: '-80px 0px -50% 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.docs-nav a').forEach(a => {
+                            a.classList.remove('active');
+                            if (a.getAttribute('href') === `#${id}`) {
+                                a.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.docs-section').forEach(section => {
+                observer.observe(section);
+            });
+        </script>
+    </body>
+</html>

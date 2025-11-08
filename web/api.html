@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>API Reference - Firmware Upgrader</title>
+        <link rel="stylesheet" href="/shared.css" />
+        <style>
+            .api-container {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: var(--spacing-xl);
+            }
+
+            .api-sidebar {
+                position: sticky;
+                top: 80px;
+                background: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-lg);
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .api-sidebar h3 {
+                margin-top: 0;
+                margin-bottom: var(--spacing-md);
+                color: var(--primary-color);
+            }
+
+            .api-sidebar ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .api-sidebar li {
+                margin-bottom: var(--spacing-xs);
+            }
+
+            .api-sidebar a {
+                color: var(--text-secondary);
+                text-decoration: none;
+                padding: var(--spacing-xs) var(--spacing-sm);
+                display: block;
+                border-radius: var(--radius-md);
+                transition: all 0.2s ease;
+                font-size: 0.9em;
+            }
+
+            .api-sidebar a:hover,
+            .api-sidebar a.active {
+                background: var(--primary-color);
+                color: white;
+            }
+
+            .api-content {
+                background: var(--surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: var(--spacing-xl);
+            }
+
+            .api-section {
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .api-section h2 {
+                color: var(--primary-color);
+                margin-bottom: var(--spacing-lg);
+                padding-bottom: var(--spacing-md);
+                border-bottom: 2px solid var(--border-color);
+            }
+
+            .endpoint {
+                background: var(--background);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                padding: var(--spacing-lg);
+                margin-bottom: var(--spacing-lg);
+            }
+
+            .endpoint-header {
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-md);
+                margin-bottom: var(--spacing-md);
+            }
+
+            .method {
+                display: inline-block;
+                padding: 4px 12px;
+                border-radius: var(--radius-sm);
+                font-weight: 600;
+                font-size: 0.85em;
+                text-transform: uppercase;
+            }
+
+            .method.get { background: #4caf50; color: white; }
+            .method.post { background: #2196f3; color: white; }
+            .method.put { background: #ff9800; color: white; }
+            .method.delete { background: #f44336; color: white; }
+
+            .endpoint-path {
+                font-family: 'Courier New', monospace;
+                font-size: 1.1em;
+                font-weight: 500;
+                color: var(--text-primary);
+            }
+
+            .endpoint-description {
+                color: var(--text-secondary);
+                margin-bottom: var(--spacing-md);
+            }
+
+            .params-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: var(--spacing-md) 0;
+                font-size: 0.9em;
+            }
+
+            .params-table th {
+                background: var(--background);
+                padding: var(--spacing-sm);
+                text-align: left;
+                border-bottom: 2px solid var(--border-color);
+                font-weight: 600;
+            }
+
+            .params-table td {
+                padding: var(--spacing-sm);
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .param-name {
+                font-family: 'Courier New', monospace;
+                color: var(--primary-color);
+                font-weight: 500;
+            }
+
+            .param-type {
+                color: var(--text-secondary);
+                font-style: italic;
+            }
+
+            .code-example {
+                background: #1e1e1e;
+                color: #d4d4d4;
+                padding: var(--spacing-md);
+                border-radius: var(--radius-md);
+                margin: var(--spacing-md) 0;
+                overflow-x: auto;
+                font-family: 'Courier New', monospace;
+                font-size: 0.85em;
+                line-height: 1.5;
+            }
+
+            .response-code {
+                display: inline-block;
+                background: #4caf50;
+                color: white;
+                padding: 2px 8px;
+                border-radius: var(--radius-sm);
+                font-family: 'Courier New', monospace;
+                font-size: 0.85em;
+                font-weight: 600;
+                margin-right: var(--spacing-sm);
+            }
+
+            .response-code.error {
+                background: #f44336;
+            }
+
+            .try-it-btn {
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: var(--spacing-sm) var(--spacing-md);
+                border-radius: var(--radius-md);
+                cursor: pointer;
+                font-size: 0.9em;
+                margin-top: var(--spacing-sm);
+            }
+
+            .try-it-btn:hover {
+                background: var(--primary-hover);
+            }
+
+            .info-badge {
+                display: inline-block;
+                background: #e3f2fd;
+                color: #1976d2;
+                padding: 2px 8px;
+                border-radius: var(--radius-sm);
+                font-size: 0.8em;
+                margin-left: var(--spacing-sm);
+            }
+        </style>
+    </head>
+    <body>
+        <header></header>
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🔄</span>
+                    <span class="logo-text">Firmware Upgrader</span>
+                </div>
+                <nav>
+                    <a href="/">Dashboard</a>
+                    <a href="/cmts.html">CMTS</a>
+                    <a href="/rules.html">Rules</a>
+                    <a href="/activity.html">Activity</a>
+                    <a href="/settings.html">Settings</a>
+                    <a href="/docs.html">Docs</a>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <div class="api-container">
+                <div class="api-sidebar">
+                    <h3>API Endpoints</h3>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#cmts">CMTS Endpoints</a></li>
+                        <li><a href="#modems">Modem Endpoints</a></li>
+                        <li><a href="#rules">Rule Endpoints</a></li>
+                        <li><a href="#jobs">Job Endpoints</a></li>
+                        <li><a href="#activity">Activity Endpoints</a></li>
+                        <li><a href="#settings">Settings Endpoints</a></li>
+                        <li><a href="#health">Health & Status</a></li>
+                    </ul>
+                </div>
+
+                <div class="api-content">
+                    <!-- Overview -->
+                    <div class="api-section" id="overview">
+                        <h2>🔌 API Overview</h2>
+                        <p>
+                            The Firmware Upgrader REST API provides programmatic access to all system
+                            functionality. All endpoints return JSON responses and use standard HTTP methods.
+                        </p>
+
+                        <h3>Base URL</h3>
+                        <div class="code-example">http://your-server:8080/api</div>
+
+                        <h3>Response Format</h3>
+                        <p>All API responses follow this structure:</p>
+                        <div class="code-example">{
+  "success": true,
+  "data": { ... },
+  "error": null
+}</div>
+
+                        <h3>Error Handling</h3>
+                        <p>Errors return appropriate HTTP status codes with details:</p>
+                        <div class="code-example">{
+  "success": false,
+  "data": null,
+  "error": "Error message here"
+}</div>
+                    </div>
+
+                    <!-- CMTS Endpoints -->
+                    <div class="api-section" id="cmts">
+                        <h2>🌐 CMTS Endpoints</h2>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/cmts</span>
+                            </div>
+                            <p class="endpoint-description">List all CMTS devices</p>
+                            <h4></h4>Response</h4>
+                            <div class="code-example">[
+  {
+    "id": 1,
+    "name": "CMTS-01",
+    "ip_address": "192.168.1.1",
+    "snmp_community": "public",
+    "tftp_server": "192.168.1.10",
+    "enabled": true,
+    "last_discovery": "2024-11-08T19:30:00Z",
+    "modem_count": 1523
+  }
+]</div>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/api/cmts')">Try It</button>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/cmts/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Get a specific CMTS by ID</p>
+                            <h4>Parameters</h4>
+                            <table class="params-table">
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>CMTS ID</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method post">POST</span>
+                                <span class="endpoint-path">/api/cmts</span>
+                            </div>
+                            <p class="endpoint-description">Create a new CMTS</p>
+                            <h4>Request Body</h4>
+                            <div class="code-example">{
+  "name": "CMTS-02",
+  "ip_address": "192.168.1.2",
+  "snmp_community": "public",
+  "tftp_server": "192.168.1.10",
+  "enabled": true
+}</div>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method put">PUT</span>
+                                <span class="endpoint-path">/api/cmts/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Update a CMTS</p>
+                            <h4>Request Body</h4>
+                            <div class="code-example">{
+  "name": "CMTS-02-Updated",
+  "enabled": false
+}</div>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method delete">DELETE</span>
+                                <span class="endpoint-path">/api/cmts/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Delete a CMTS</p>
+                        </div>
+                    </div>
+
+                    <!-- Modem Endpoints -->
+                    <div class="api-section" id="modems">
+                        <h2>📡 Modem Endpoints</h2>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/modems</span>
+                                <span class="info-badge">Paginated</span>
+                            </div>
+                            <p class="endpoint-description">List all discovered modems</p>
+                            <h4>Query Parameters</h4>
+                            <table class="params-table">
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">cmts_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>Filter by CMTS ID (optional)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">firmware</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Filter by firmware version (optional)</td>
+                                </tr>
+                            </table>
+                            <h4>Response</h4>
+                            <div class="code-example">[
+  {
+    "id": 1,
+    "mac_address": "00:11:22:33:44:55",
+    "cmts_id": 1,
+    "cmts_name": "CMTS-01",
+    "interface": "Cable8/0/0",
+    "firmware_version": "9.1.93A",
+    "model": "SB6190",
+    "last_seen": "2024-11-08T19:30:00Z"
+  }
+]</div>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/api/modems')">Try It</button>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/modems/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Get a specific modem by ID</p>
+                        </div>
+                    </div>
+
+                    <!-- Rule Endpoints -->
+                    <div class="api-section" id="rules">
+                        <h2>📋 Rule Endpoints</h2>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/rules</span>
+                            </div>
+                            <p class="endpoint-description">List all upgrade rules</p>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/api/rules')">Try It</button>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method post">POST</span>
+                                <span class="endpoint-path">/api/rules</span>
+                            </div>
+                            <p class="endpoint-description">Create a new upgrade rule</p>
+                            <h4>Request Body</h4>
+                            <div class="code-example">{
+  "name": "SB6190 Security Update",
+  "source_versions": "9.1.93A,9.1.93B",
+  "target_version": "9.1.103D",
+  "target_filename": "SB6190-9.1.103D.bin",
+  "cmts_filter": "1,2,3",
+  "priority": 100,
+  "enabled": true
+}</div>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method put">PUT</span>
+                                <span class="endpoint-path">/api/rules/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Update a rule</p>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method delete">DELETE</span>
+                                <span class="endpoint-path">/api/rules/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Delete a rule</p>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method post">POST</span>
+                                <span class="endpoint-path">/api/rules/{id}/evaluate</span>
+                            </div>
+                            <p class="endpoint-description">Manually trigger rule evaluation</p>
+                        </div>
+                    </div>
+
+                    <!-- Job Endpoints -->
+                    <div class="api-section" id="jobs">
+                        <h2>⚙️ Job Endpoints</h2>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/jobs</span>
+                                <span class="info-badge">Paginated</span>
+                            </div>
+                            <p class="endpoint-description">List upgrade jobs</p>
+                            <h4>Query Parameters</h4>
+                            <table class="params-table">
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">status</span></td>
+                                    <td><span class="param-type">string</span></td>
+                                    <td>Filter by status: pending, in_progress, completed, failed</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">rule_id</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>Filter by rule ID</td>
+                                </tr>
+                            </table>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/api/jobs')">Try It</button>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/jobs/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Get job details</p>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method post">POST</span>
+                                <span class="endpoint-path">/api/jobs/{id}/retry</span>
+                            </div>
+                            <p class="endpoint-description">Retry a failed job</p>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method delete">DELETE</span>
+                                <span class="endpoint-path">/api/jobs/{id}</span>
+                            </div>
+                            <p class="endpoint-description">Cancel/delete a job</p>
+                        </div>
+                    </div>
+
+                    <!-- Activity Endpoints -->
+                    <div class="api-section" id="activity">
+                        <h2>📊 Activity Endpoints</h2>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/activity-log</span>
+                                <span class="info-badge">Paginated</span>
+                            </div>
+                            <p class="endpoint-description">Get activity log entries</p>
+                            <h4>Query Parameters</h4>
+                            <table class="params-table">
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">limit</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>Number of entries (default: 100)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="param-name">offset</span></td>
+                                    <td><span class="param-type">integer</span></td>
+                                    <td>Offset for pagination</td>
+                                </tr>
+                            </table>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/api/activity-log')">Try It</button>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/stats</span>
+                            </div>
+                            <p class="endpoint-description">Get system statistics</p>
+                            <h4>Response</h4>
+                            <div class="code-example">{
+  "total_cmts": 5,
+  "total_modems": 15234,
+  "total_rules": 12,
+  "active_jobs": 23,
+  "completed_jobs": 1523,
+  "failed_jobs": 45,
+  "success_rate": 97.1
+}</div>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/api/stats')">Try It</button>
+                        </div>
+                    </div>
+
+                    <!-- Settings Endpoints -->
+                    <div class="api-section" id="settings">
+                        <h2>⚙️ Settings Endpoints</h2>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/api/settings</span>
+                            </div>
+                            <p class="endpoint-description">Get all settings</p>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/api/settings')">Try It</button>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method put">PUT</span>
+                                <span class="endpoint-path">/api/settings</span>
+                            </div>
+                            <p class="endpoint-description">Update settings</p>
+                            <h4>Request Body</h4>
+                            <div class="code-example">{
+  "workers": "5",
+  "discovery_interval": "60",
+  "job_timeout": "300",
+  "retry_attempts": "3",
+  "max_upgrades_per_cmts": "10"
+}</div>
+                        </div>
+                    </div>
+
+                    <!-- Health Endpoints -->
+                    <div class="api-section" id="health">
+                        <h2>💚 Health & Status</h2>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/health</span>
+                            </div>
+                            <p class="endpoint-description">Health check endpoint</p>
+                            <h4>Response</h4>
+                            <div class="code-example">{
+  "status": "healthy",
+  "version": "0.1.0",
+  "uptime": 3600
+}</div>
+                            <button class="try-it-btn" onclick="tryEndpoint('GET', '/health')">Try It</button>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="method get">GET</span>
+                                <span class="endpoint-path">/metrics</span>
+                            </div>
+                            <p class="endpoint-description">Prometheus-compatible metrics endpoint</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/cmts.html">CMTS Management</a></li>
+                        <li><a href="/rules.html">Rules Management</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="/docs.html">Documentation</a></li>
+                        <li><a href="/api.html">API Reference</a></li>
+                        <li><a href="/settings.html">Settings</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>System</h3>
+                    <ul>
+                        <li><a href="/activity.html">Activity Log</a></li>
+                        <li><a href="/settings.html">Settings</a></li>
+                        <li><a href="/">Dashboard</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Firmware Upgrader. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <script src="/shared.js"></script>
+        <script>
+            // Try It button functionality
+            async function tryEndpoint(method, path) {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'code-example';
+                resultDiv.style.marginTop = '10px';
+                resultDiv.textContent = 'Loading...';
+
+                const button = event.target;
+                button.parentElement.appendChild(resultDiv);
+
+                try {
+                    const response = await fetch(path, { method });
+                    const data = await response.json();
+                    resultDiv.textContent = JSON.stringify(data, null, 2);
+                } catch (error) {
+                    resultDiv.textContent = `Error: ${error.message}`;
+                    resultDiv.style.background = '#f44336';
+                    resultDiv.style.color = 'white';
+                }
+            }
+
+            // Smooth scroll to anchors
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                        // Update active nav item
+                        document.querySelectorAll('.api-sidebar a').forEach(a => a.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Highlight current section in nav on scroll
+            const observerOptions = {
+                threshold: 0.3,
+                rootMargin: '-80px 0px -60% 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.api-sidebar a').forEach(a => {
+                            a.classList.remove('active');
+                            if (a.getAttribute('href') === `#${id}`) {
+                                a.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.api-section').forEach(section => {
+                observer.observe(section);
+            });
+        </script>
+    </body>
+</html>
