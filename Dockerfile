@@ -1,7 +1,14 @@
-# Build stage - use Debian for better CGO compatibility
-FROM golang:1.22-bookworm AS builder
+# Build stage
+FROM golang:1.24-alpine AS builder
+
+# Build arguments for version injection
+ARG VERSION=dev
+ARG BUILD_TIME=unknown
 
 WORKDIR /build
+
+# Install build dependencies for UPX
+RUN apk add --no-cache upx git
 
 # Copy go mod files
 COPY go.mod go.sum ./
@@ -11,13 +18,15 @@ RUN go mod download
 COPY . .
 
 # Build with optimizations for smaller binary
-RUN CGO_ENABLED=1 GOOS=linux go build \
-    -ldflags="-s -w" \
+# Using CGO_ENABLED=0 because modernc.org/sqlite is pure Go
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-s -w -X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME}" \
+    -trimpath \
     -o firmware-upgrader \
     ./cmd/firmware-upgrader
 
-# Strip debug symbols for smaller size
-RUN strip firmware-upgrader
+# Compress with UPX for minimal size
+RUN upx --best --lzma firmware-upgrader
 
 # Final stage - minimal distroless image
 FROM gcr.io/distroless/base-debian12

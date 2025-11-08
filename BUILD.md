@@ -166,6 +166,57 @@ The version is displayed in:
 - `--version` flag (if implemented)
 - Health check endpoint (`/health`)
 
+## Container Builds with Podman
+
+### GitHub Container Registry (GHCR)
+
+Push container images to GitHub Container Registry using Podman and the `gh` CLI:
+
+```bash
+# Prerequisites: Install gh CLI and podman
+brew install gh podman
+gh auth login
+
+# Login to GHCR
+make ghcr-login
+
+# Build multi-platform image (AMD64 + ARM64)
+make ghcr-build
+
+# Build and push to GHCR
+make ghcr-push
+
+# Build and push minimal image
+make ghcr-push-minimal
+
+# Release everything (standard + minimal)
+make ghcr-release
+```
+
+**What gets pushed:**
+- `ghcr.io/awksedgreep/firmware-upgrader:latest` - Standard image (latest)
+- `ghcr.io/awksedgreep/firmware-upgrader:v1.2.3` - Standard image (tagged)
+- `ghcr.io/awksedgreep/firmware-upgrader:minimal` - Minimal image (latest)
+- `ghcr.io/awksedgreep/firmware-upgrader:v1.2.3-minimal` - Minimal image (tagged)
+
+**Features:**
+- Multi-platform support (linux/amd64, linux/arm64)
+- Automatic version tagging from git
+- UPX compression built-in
+- Version and build time injected at build time
+
+**Pull from GHCR:**
+```bash
+# Pull latest
+podman pull ghcr.io/awksedgreep/firmware-upgrader:latest
+
+# Pull specific version
+podman pull ghcr.io/awksedgreep/firmware-upgrader:v1.2.3
+
+# Pull minimal variant
+podman pull ghcr.io/awksedgreep/firmware-upgrader:minimal
+```
+
 
 
 ## Deployment
@@ -324,6 +375,9 @@ If you need even smaller binaries:
 - [UPX Documentation](https://upx.github.io/)
 - [MikroTik RouterOS Container](https://help.mikrotik.com/docs/display/ROS/Container)
 - [Go Build Modes](https://pkg.go.dev/cmd/go#hdr-Build_modes)
+- [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+- [GitHub CLI](https://cli.github.com/)
+- [Podman](https://podman.io/)
 
 ## Summary
 
