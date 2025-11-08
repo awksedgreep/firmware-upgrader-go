@@ -197,6 +197,8 @@ ghcr-build: ## Build container image for GHCR (multi-platform)
 		--build-arg BUILD_TIME=$(BUILD_TIME) \
 		.
 	@echo "Creating manifest list..."
+	podman manifest rm $(GHCR_IMAGE):$(VERSION) 2>/dev/null || true
+	podman manifest rm $(GHCR_IMAGE):latest 2>/dev/null || true
 	podman manifest create $(GHCR_IMAGE):$(VERSION) \
 		$(GHCR_IMAGE):$(VERSION)-amd64 \
 		$(GHCR_IMAGE):$(VERSION)-arm64
@@ -236,6 +238,8 @@ ghcr-push-minimal: ghcr-login ## Build and push minimal container image to GHCR
 		--build-arg BUILD_TIME=$(BUILD_TIME) \
 		.
 	@echo "Creating manifest list..."
+	podman manifest rm $(GHCR_IMAGE):$(VERSION)-minimal 2>/dev/null || true
+	podman manifest rm $(GHCR_IMAGE):minimal 2>/dev/null || true
 	podman manifest create $(GHCR_IMAGE):$(VERSION)-minimal \
 		$(GHCR_IMAGE):$(VERSION)-minimal-amd64 \
 		$(GHCR_IMAGE):$(VERSION)-minimal-arm64
