@@ -180,6 +180,7 @@ func (s *Server) setupRoutes() {
 
 	// Settings routes
 	api.HandleFunc("/settings", s.handleListSettings).Methods("GET")
+	api.HandleFunc("/settings", s.handleUpdateSettings).Methods("PUT")
 	api.HandleFunc("/settings/{key}", s.handleGetSetting).Methods("GET")
 	api.HandleFunc("/settings/{key}", s.handleUpdateSetting).Methods("PUT")
 
@@ -853,6 +854,33 @@ func (s *Server) handleGetSetting(w http.ResponseWriter, r *http.Request) {
 		"key":   key,
 		"value": value,
 	})
+}
+
+func (s *Server) handleUpdateSettings(w http.ResponseWriter, r *http.Request) {
+	var settings map[string]string
+	if err := json.NewDecoder(r.Body).Decode(&settings); err != nil {
+		s.respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Update each setting
+	for key, value := range settings {
+		if err := s.db.SetSetting(key, value); err != nil {
+			log.Error().Err(err).Str("key", key).Msg("Failed to update setting")
+			s.respondError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update setting: %s", key))
+			return
+		}
+
+		// Log activity for each setting
+		s.db.LogActivity(&models.ActivityLog{
+			EventType:  models.EventSystemEvent,
+			EntityType: "setting",
+			EntityID:   0,
+			Message:    fmt.Sprintf("Updated setting: %s = %s", key, value),
+		})
+	}
+
+	s.respondJSON(w, http.StatusOK, map[string]bool{"success": true})
 }
 
 func (s *Server) handleUpdateSetting(w http.ResponseWriter, r *http.Request) {
