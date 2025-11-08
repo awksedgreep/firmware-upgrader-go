@@ -1,11 +1,6 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Edit CMTS - Firmware Upgrader</title>
-        <style>
-            body {
+{{define "content"}}
+<style>
+body {
                 font-family:
                     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
                     Helvetica, Arial, sans-serif;
@@ -162,109 +157,12 @@
                     color: #ff453a;
                 }
             }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <nav>
-                <a href="/">Home</a>
-                <a href="/cmts.html">CMTS Management</a>
-            </nav>
-            <h1>
-                Edit CMTS
-                <span id="cmts-name-header" style="color: #8e8e93"></span>
-            </h1>
+</style>
 
-            <form id="edit-cmts-form" style="display: none">
-                <input type="hidden" id="id" name="id" />
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" name="name" required />
-                </div>
-                <div class="form-group">
-                    <label for="ip_address">IP Address</label>
-                    <input
-                        type="text"
-                        id="ip_address"
-                        name="ip_address"
-                        required
-                    />
-                </div>
-                <div class="form-group">
-                    <label for="community_read">SNMP Read Community</label>
-                    <input
-                        type="text"
-                        id="community_read"
-                        name="community_read"
-                        required
-                    />
-                </div>
-                <div class="form-group">
-                    <label for="community_write">SNMP Write Community</label>
-                    <input
-                        type="text"
-                        id="community_write"
-                        name="community_write"
-                    />
-                </div>
-                <div class="form-group">
-                    <label for="cm_community_string"
-                        >Cable Modem Community</label
-                    >
-                    <input
-                        type="text"
-                        id="cm_community_string"
-                        name="cm_community_string"
-                        required
-                    />
-                </div>
-                <div class="form-group">
-                    <label for="snmp_port">SNMP Port</label>
-                    <input
-                        type="number"
-                        id="snmp_port"
-                        name="snmp_port"
-                        required
-                    />
-                </div>
-                <div class="form-group">
-                    <label for="snmp_version">SNMP Version</label>
-                    <select id="snmp_version" name="snmp_version">
-                        <option value="1">1</option>
-                        <option value="2">2c</option>
-                        <option value="3">3</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="enabled">Status</label>
-                    <select id="enabled" name="enabled">
-                        <option value="1">Enabled</option>
-                        <option value="0">Disabled</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button
-                        type="button"
-                        id="delete-button"
-                        class="button-danger"
-                    >
-                        Delete
-                    </button>
-                    <a
-                        href="/cmts.html"
-                        class="button-secondary"
-                        style="padding: 0.8em 1.5em; border-radius: 6px"
-                        >Cancel</a
-                    >
-                    <button type="submit">Save Changes</button>
-                </div>
-            </form>
-            <div id="form-message"></div>
-            <p id="loading-message">Loading CMTS data...</p>
-        </div>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", async () => {
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
                 const editForm = document.getElementById("edit-cmts-form");
                 const loadingMessage =
                     document.getElementById("loading-message");
@@ -399,6 +297,5 @@
                     formMessage.style.display = "block";
                 }
             });
-        </script>
-    </body>
-</html>
+</script>
+{{end}}

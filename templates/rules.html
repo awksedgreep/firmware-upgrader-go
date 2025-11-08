@@ -1,12 +1,6 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Rules Management - Firmware Upgrader</title>
-        <link rel="stylesheet" href="/shared.css" />
-        <style>
-            .content-wrapper {
+{{define "content"}}
+<style>
+.content-wrapper {
                 display: flex;
                 flex-direction: column;
                 min-height: calc(100vh - 200px);
@@ -92,29 +86,9 @@
                 font-size: 2.5em;
                 margin-bottom: var(--spacing-md);
             }
-        </style>
-    </head>
-    <body>
-        <!-- Header -->
-        <header>
-            <div class="header-container">
-                <a href="/" class="header-brand"> 📡 Firmware Upgrader </a>
-                <nav>
-                    <ul class="header-nav">
-                        <li><a href="/">Dashboard</a></li>
-                        <li><a href="/cmts.html">CMTS</a></li>
-                        <li><a href="/rules.html">Rules</a></li>
-                        <li><a href="/activity.html">Activity</a></li>
-                        <li><a href="/settings.html">Settings</a></li>
-                        <li><a href="/docs.html">Docs</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
+</style>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Page Header -->
+<!-- Page Header -->
             <div class="page-header">
                 <div></div>
                     <h1 class="page-title">Rules Management</h1>
@@ -250,45 +224,9 @@
                     </table>
                 </div>
             </div>
-        </main>
 
-        <!-- Footer -->
-        <footer>
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Product</h3>
-                    <ul>
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/cmts.html">CMTS Management</a></li>
-                        <li><a href="/rules.html">Rules Management</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Resources</h3>
-                    <ul>
-                        <li><a href="/docs.html">Documentation</a></li>
-                        <li><a href="/api.html">API Reference</a></li>
-                        <li><a href="/settings.html">Settings</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>System</h3>
-                    <ul>
-                        <li><a href="/activity.html">Activity Log</a></li>
-                        <li><a href="/settings.html">Settings</a></li>
-                        <li><a href="/">Dashboard</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Firmware Upgrader. All rights reserved.</p>
-            </div>
-        </footer>
-
-        <!-- Scripts -->
-        <script src="/shared.js"></script>
-        <script>
-            // Manual trigger function
+<script>
+// Manual trigger function
             async function triggerRuleEvaluation() {
                 if (!confirm('Evaluate all upgrade rules against discovered modems?')) {
                     return;
@@ -498,6 +436,5 @@
                 updateCriteriaFields();
                 fetchRules();
             });
-        </script>
-    </body>
-</html>
+</script>
+{{end}}

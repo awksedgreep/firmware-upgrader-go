@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,11 +25,12 @@ type Config struct {
 
 // Server represents the HTTP API server
 type Server struct {
-	db     *database.DB
-	engine *engine.Engine
-	config Config
-	router *mux.Router
-	server *http.Server
+	db        *database.DB
+	engine    *engine.Engine
+	config    Config
+	router    *mux.Router
+	server    *http.Server
+	templates map[string]*template.Template
 }
 
 // NewServer creates a new API server
@@ -38,6 +40,11 @@ func NewServer(db *database.DB, eng *engine.Engine, config Config) *Server {
 		engine: eng,
 		config: config,
 		router: mux.NewRouter(),
+	}
+
+	// Load templates
+	if err := s.loadTemplates(); err != nil {
+		log.Warn().Err(err).Msg("Failed to load templates, template rendering will be disabled")
 	}
 
 	s.setupRoutes()
@@ -51,6 +58,64 @@ func NewServer(db *database.DB, eng *engine.Engine, config Config) *Server {
 	}
 
 	return s
+}
+
+// loadTemplates loads all HTML templates
+func (s *Server) loadTemplates() error {
+	s.templates = make(map[string]*template.Template)
+
+	// List of pages to load
+	pages := []string{
+		"index",
+		"cmts",
+		"rules",
+		"activity",
+		"settings",
+		"docs",
+		"api",
+		"edit-cmts",
+		"edit-rule",
+	}
+
+	// Load each page with the base layout
+	for _, page := range pages {
+		tmpl := template.New(page)
+
+		// Parse base layout first
+		tmpl, err := tmpl.ParseFiles("templates/layouts/base.html")
+		if err != nil {
+			log.Warn().Err(err).Str("page", page).Msg("Failed to parse base layout")
+			continue
+		}
+
+		// Parse the specific page template
+		tmpl, err = tmpl.ParseFiles("templates/" + page + ".html")
+		if err != nil {
+			log.Warn().Err(err).Str("page", page).Msg("Failed to parse page template")
+			continue
+		}
+
+		s.templates[page] = tmpl
+	}
+
+	log.Info().Int("count", len(s.templates)).Msg("Templates loaded successfully")
+	return nil
+}
+
+// renderTemplate renders a template with data
+func (s *Server) renderTemplate(w http.ResponseWriter, name string, data interface{}) {
+	tmpl, ok := s.templates[name]
+	if !ok {
+		log.Error().Str("template", name).Msg("Template not found")
+		http.Error(w, "Page not found", http.StatusNotFound)
+		return
+	}
+
+	err := tmpl.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		log.Error().Err(err).Str("template", name).Msg("Failed to render template")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 // Start starts the HTTP server
@@ -69,6 +134,17 @@ func (s *Server) setupRoutes() {
 	// Middleware
 	s.router.Use(s.loggingMiddleware)
 	s.router.Use(s.corsMiddleware)
+
+	// UI Pages (server-side rendered)
+	s.router.HandleFunc("/", s.handleIndexPage).Methods("GET")
+	s.router.HandleFunc("/cmts.html", s.handleCMTSPage).Methods("GET")
+	s.router.HandleFunc("/rules.html", s.handleRulesPage).Methods("GET")
+	s.router.HandleFunc("/activity.html", s.handleActivityPage).Methods("GET")
+	s.router.HandleFunc("/settings.html", s.handleSettingsPage).Methods("GET")
+	s.router.HandleFunc("/docs.html", s.handleDocsPage).Methods("GET")
+	s.router.HandleFunc("/api.html", s.handleAPIPage).Methods("GET")
+	s.router.HandleFunc("/edit-cmts.html", s.handleEditCMTSPage).Methods("GET")
+	s.router.HandleFunc("/edit-rule.html", s.handleEditRulePage).Methods("GET")
 
 	// API routes
 	api := s.router.PathPrefix("/api").Subrouter()
@@ -112,10 +188,56 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/metrics", s.handleMetrics).Methods("GET")
 	api.HandleFunc("/dashboard", s.handleDashboard).Methods("GET")
 
-	// Static files (web UI)
+	// Static assets (CSS, JS)
 	if s.config.WebRoot != "" {
 		s.router.PathPrefix("/").Handler(http.FileServer(http.Dir(s.config.WebRoot)))
 	}
+}
+
+// Page handlers
+func (s *Server) handleIndexPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Dashboard"}
+	s.renderTemplate(w, "index", data)
+}
+
+func (s *Server) handleCMTSPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "CMTS Management"}
+	s.renderTemplate(w, "cmts", data)
+}
+
+func (s *Server) handleRulesPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Rules Management"}
+	s.renderTemplate(w, "rules", data)
+}
+
+func (s *Server) handleActivityPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Activity Log"}
+	s.renderTemplate(w, "activity", data)
+}
+
+func (s *Server) handleSettingsPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Settings"}
+	s.renderTemplate(w, "settings", data)
+}
+
+func (s *Server) handleDocsPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Documentation"}
+	s.renderTemplate(w, "docs", data)
+}
+
+func (s *Server) handleAPIPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "API Reference"}
+	s.renderTemplate(w, "api", data)
+}
+
+func (s *Server) handleEditCMTSPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Edit CMTS"}
+	s.renderTemplate(w, "edit-cmts", data)
+}
+
+func (s *Server) handleEditRulePage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{"Title": "Edit Rule"}
+	s.renderTemplate(w, "edit-rule", data)
 }
 
 // Middleware
