@@ -26,6 +26,12 @@ func New(dbPath string) (*DB, error) {
 		return nil, fmt.Errorf("failed to enable WAL mode: %w", err)
 	}
 
+	// Set WAL autocheckpoint to smaller value to limit WAL file size
+	// Default is 1000 pages (~4MB), reducing to 100 pages (~400KB)
+	if _, err := conn.Exec("PRAGMA wal_autocheckpoint=100"); err != nil {
+		return nil, fmt.Errorf("failed to set WAL autocheckpoint: %w", err)
+	}
+
 	// Increase busy timeout to handle concurrent writes
 	if _, err := conn.Exec("PRAGMA busy_timeout=5000"); err != nil {
 		return nil, fmt.Errorf("failed to set busy timeout: %w", err)

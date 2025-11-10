@@ -22,7 +22,7 @@ MACOS_AMD64 = $(BINARY_NAME)-darwin-amd64
 BUILD_DIR = build
 CMD_DIR = cmd/firmware-upgrader
 
-.PHONY: all clean test coverage build linux-arm64 linux-amd64 linux-arm macos help compress ghcr-login ghcr-build ghcr-push ghcr-push-minimal ghcr-release
+.PHONY: all clean test coverage build linux-arm64 linux-amd64 linux-arm macos help compress ghcr-login ghcr-build ghcr-push ghcr-push-minimal ghcr-push-tiny ghcr-release
 
 # Default target
 all: clean linux-arm64 linux-amd64 linux-arm
@@ -253,7 +253,43 @@ ghcr-push-minimal: ghcr-login ## Build and push minimal container image to GHCR
 	@echo "   $(GHCR_IMAGE):$(VERSION)-minimal"
 	@echo "   $(GHCR_IMAGE):minimal"
 
-ghcr-release: ghcr-push ghcr-push-minimal ## Build and push all container images to GHCR (standard + minimal)
+ghcr-push-tiny: ghcr-login ## Build and push tiny container image to GHCR
+	@echo "Building and pushing tiny image to GHCR..."
+	@if ! command -v podman >/dev/null 2>&1; then \
+		echo "ERROR: podman not found. Install from: https://podman.io/"; \
+		exit 1; \
+	fi
+	@echo "Building AMD64 tiny image..."
+	podman build --platform linux/amd64 \
+		-f Dockerfile.tiny \
+		-t $(GHCR_IMAGE):$(VERSION)-tiny-amd64 \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_TIME=$(BUILD_TIME) \
+		.
+	@echo "Building ARM64 tiny image..."
+	podman build --platform linux/arm64 \
+		-f Dockerfile.tiny \
+		-t $(GHCR_IMAGE):$(VERSION)-tiny-arm64 \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_TIME=$(BUILD_TIME) \
+		.
+	@echo "Creating manifest list..."
+	podman manifest rm $(GHCR_IMAGE):$(VERSION)-tiny 2>/dev/null || true
+	podman manifest rm $(GHCR_IMAGE):tiny 2>/dev/null || true
+	podman manifest create $(GHCR_IMAGE):$(VERSION)-tiny \
+		$(GHCR_IMAGE):$(VERSION)-tiny-amd64 \
+		$(GHCR_IMAGE):$(VERSION)-tiny-arm64
+	podman manifest create $(GHCR_IMAGE):tiny \
+		$(GHCR_IMAGE):$(VERSION)-tiny-amd64 \
+		$(GHCR_IMAGE):$(VERSION)-tiny-arm64
+	@echo "Pushing to GHCR..."
+	podman manifest push $(GHCR_IMAGE):$(VERSION)-tiny docker://$(GHCR_IMAGE):$(VERSION)-tiny
+	podman manifest push $(GHCR_IMAGE):tiny docker://$(GHCR_IMAGE):tiny
+	@echo "✅ Pushed tiny image to GHCR:"
+	@echo "   $(GHCR_IMAGE):$(VERSION)-tiny"
+	@echo "   $(GHCR_IMAGE):tiny"
+
+ghcr-release: ghcr-push ghcr-push-minimal ghcr-push-tiny ## Build and push all container images to GHCR (standard + minimal + tiny)
 	@echo ""
 	@echo "╔══════════════════════════════════════════════════════════════╗"
 	@echo "║  Successfully released to GitHub Container Registry          ║"
@@ -266,6 +302,10 @@ ghcr-release: ghcr-push ghcr-push-minimal ## Build and push all container images
 	@echo "Minimal images:"
 	@echo "  podman pull $(GHCR_IMAGE):$(VERSION)-minimal"
 	@echo "  podman pull $(GHCR_IMAGE):minimal"
+	@echo ""
+	@echo "Tiny images:"
+	@echo "  podman pull $(GHCR_IMAGE):$(VERSION)-tiny"
+	@echo "  podman pull $(GHCR_IMAGE):tiny"
 	@echo ""
 	@echo "View at: https://github.com/awksedgreep/firmware-upgrader/pkgs/container/firmware-upgrader"
 
