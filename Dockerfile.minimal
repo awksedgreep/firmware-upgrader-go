@@ -43,10 +43,11 @@ WORKDIR /app
 # Copy compressed binary
 COPY --from=builder /build/firmware-upgrader .
 
-# Copy web UI
+# Copy web UI and templates (required for server-side rendering)
 COPY --from=builder /build/web ./web
+COPY --from=builder /build/templates ./templates
 
-# Create non-root user
+# Create non-root user and set ownership
 RUN adduser -D -u 1000 upgrader && \
     chown -R upgrader:upgrader /app
 

@@ -35,8 +35,9 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy compressed binary
 COPY --from=builder /build/firmware-upgrader .
 
-# Copy web UI
+# Copy web UI and templates (required for server-side rendering)
 COPY --from=builder /build/web ./web
+COPY --from=builder /build/templates ./templates
 
 EXPOSE 8080
 
